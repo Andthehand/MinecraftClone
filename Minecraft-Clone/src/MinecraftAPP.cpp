@@ -1,12 +1,14 @@
 #include <RealEngine/Core/EntryPoint.h>
 #include <RealEngine.h>
 
+#include "MinecraftLayer.h"
+
 namespace RealEngine {
 	class Editor : public Application {
 	public:
 		Editor(const ApplicationSpecification& specification)
 			: Application(specification) {
-			//PushLayer(new EditorLayer());
+			PushLayer(new MinecraftLayer());
 		}
 
 		~Editor() = default;
