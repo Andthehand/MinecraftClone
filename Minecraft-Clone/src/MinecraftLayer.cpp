@@ -1,5 +1,7 @@
 #include "MinecraftLayer.h"
 
+#include <imgui.h>
+
 namespace RealEngine {
 	MinecraftLayer::MinecraftLayer()
 		: Layer("MinecraftLayer") {
@@ -28,6 +30,16 @@ namespace RealEngine {
 	}
 
 	void MinecraftLayer::OnImGui() {
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("OpenGL")) {
+				static bool wireframe = false;
+				if (ImGui::MenuItem("Wireframe", nullptr, &wireframe)) {
+					RenderCommands::SetWireframe(wireframe);
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
 	}
 
 	void MinecraftLayer::OnEvent(Event& e) {
