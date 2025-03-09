@@ -14,6 +14,7 @@ namespace RealEngine {
 		virtual void OnEvent(Event& e) override;
 	private:
 		Ref<Shader> m_Shader;
+		Ref<UniformBuffer> m_UniformBuffer;
 
 		Chunk m_Chunk;
 	};
