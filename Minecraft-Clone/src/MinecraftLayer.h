@@ -16,6 +16,8 @@ namespace RealEngine {
 		Ref<Shader> m_Shader;
 		Ref<UniformBuffer> m_UniformBuffer;
 
+		EditorCamera m_Camera;
+
 		Chunk m_Chunk;
 	};
 }
