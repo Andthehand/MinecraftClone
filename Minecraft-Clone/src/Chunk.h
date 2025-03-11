@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 64
 
 namespace RealEngine {
 	enum Block : uint8_t {
@@ -21,6 +21,8 @@ namespace RealEngine {
 	public:
 		Chunk();
 		~Chunk() = default;
+
+		void GenerateMesh();
 
 		void Render();
 	private:
