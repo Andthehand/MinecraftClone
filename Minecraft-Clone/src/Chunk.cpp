@@ -14,6 +14,7 @@ namespace RealEngine {
 	}
 	
     void Chunk::GenerateMesh() {
+		RE_PROFILE_FUNCTION();
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
         uint32_t index = 0;

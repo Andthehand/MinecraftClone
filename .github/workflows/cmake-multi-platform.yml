@@ -1,24 +1,49 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: CMake on multiple platforms
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+on: [push, pull_request]
 
 jobs:
-  build-windows-vs2022:
-    name: Windows (VS2022)
-    runs-on: windows-latest
-    timeout-minutes: 6
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        # compiler: [gcc, clang, msvc] implement later?
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Install dependencies
+      if: matrix.os == 'ubuntu-latest'
+      uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        submodules: 'recursive'
+        packages: libwayland-dev libxkbcommon-dev xorg-dev
+        version: 1.0
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+          submodules: true # Pull down RealEngine then check if we have a chache for it's submodules
+
+    - name: Submodule Hash
+      id: submodule-hash
+      uses: Andthehand/submodule-version-hash-action@main
+      with: 
+        path: './RealEngine'
+
+    - name : Cache Submodules
+      id: cache-submodule
+      uses: actions/cache@v4
+      with:
+        path: |
+          RealEngine/vendor
+          build/RealEngine/vendor
+        key: ${{ matrix.os }}-submodules-${{ steps.submodule-hash.outputs.sha256 }}
+
+    - name: Update git submodules
+      if: steps.cache-submodule.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Configure CMake
       run: >
@@ -27,28 +52,3 @@ jobs:
     
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --parallel
-
-  build-linux-clang:
-      name: Linux (Clang)
-      runs-on: ubuntu-latest
-      timeout-minutes: 6
-      env:
-        CC: clang
-      
-      steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
-  
-      - name: Configure CMake
-        run: >
-          cmake -B ${{ github.workspace }}/build 
-          -DTRACY_ENABLE=OFF
-      
-      - name: Build
-        run: cmake --build ${{ github.workspace }}/build --parallel
