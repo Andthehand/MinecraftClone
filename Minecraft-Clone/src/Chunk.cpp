@@ -15,7 +15,7 @@ namespace RealEngine {
 	
     void Chunk::GenerateMesh() {
 		RE_PROFILE_FUNCTION();
-        std::vector<float> vertices;
+        std::vector<uint32_t> vertices;
         std::vector<uint32_t> indices;
         uint32_t index = 0;
 
@@ -37,10 +37,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x + 1, y, z)) {
                         // Add vertices and indices for the positive X face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z + 1),
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z + 1)
+                            packageData(x + 1, y, z),
+                            packageData(x + 1, y + 1, z),
+                            packageData(x + 1, y + 1, z + 1),
+                            packageData(x + 1, y, z + 1)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -51,10 +51,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x - 1, y, z)) {
                         // Add vertices and indices for the negative X face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z),
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z + 1),
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z + 1)
+                            packageData(x, y, z),
+                            packageData(x, y + 1, z),
+                            packageData(x, y + 1, z + 1),
+                            packageData(x, y, z + 1)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -65,10 +65,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x, y + 1, z)) {
                         // Add vertices and indices for the positive Y face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z + 1),
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z + 1)
+                            packageData(x, y + 1, z),
+                            packageData(x + 1, y + 1, z),
+                            packageData(x + 1, y + 1, z + 1),
+                            packageData(x, y + 1, z + 1)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -79,10 +79,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x, y - 1, z)) {
                         // Add vertices and indices for the negative Y face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z + 1),
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z + 1)
+                            packageData(x, y, z),
+                            packageData(x + 1, y, z),
+                            packageData(x + 1, y, z + 1),
+                            packageData(x, y, z + 1)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -93,10 +93,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x, y, z + 1)) {
                         // Add vertices and indices for the positive Z face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z + 1),
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z + 1),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z + 1),
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z + 1)
+                            packageData(x, y, z + 1),
+                            packageData(x + 1, y, z + 1),
+                            packageData(x + 1, y + 1, z + 1),
+                            packageData(x, y + 1, z + 1)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -107,10 +107,10 @@ namespace RealEngine {
                     if (!isBlockVisible(x, y, z - 1)) {
                         // Add vertices and indices for the negative Z face
                         vertices.insert(vertices.end(), {
-                            static_cast<float>(x), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y), static_cast<float>(z),
-                            static_cast<float>(x + 1), static_cast<float>(y + 1), static_cast<float>(z),
-                            static_cast<float>(x), static_cast<float>(y + 1), static_cast<float>(z)
+                            packageData(x, y, z),
+                            packageData(x + 1, y, z),
+                            packageData(x + 1, y + 1, z),
+                            packageData(x, y + 1, z)
                         });
                         indices.insert(indices.end(), {
                             index, index + 1, index + 2,
@@ -125,7 +125,7 @@ namespace RealEngine {
         m_IBO = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());
         m_VBO = VertexBuffer::Create(vertices.data(), (uint32_t)vertices.size() * (uint32_t)sizeof(float));
         m_VBO->SetLayout(BufferAttributes{
-            { DataType::Float3 }
+            { DataType::Uint }
         });
 
         m_VAO = VertexArray::Create();
@@ -136,4 +136,14 @@ namespace RealEngine {
 	void Chunk::Render() {
 		RenderCommands::DrawIndexed(m_VAO);
 	}
+
+    uint32_t Chunk::packageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t block_id, uint8_t ao) {
+        uint32_t tempx = (x_pos & 0x3F);
+		uint32_t tempy = (y_pos & 0x3F) << 6;
+		uint32_t tempz = (z_pos & 0x3F) << 12;
+		uint32_t tempid = (block_id & 0xFF) << 18;
+		uint32_t tempeo = (ao & 0x3) << 26;
+		uint32_t ret = tempx | tempy | tempz | tempid | tempeo;
+		return ret;
+    }
 }

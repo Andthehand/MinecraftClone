@@ -26,6 +26,15 @@ namespace RealEngine {
 
 		void Render();
 	private:
+		/* 
+			6 bits for x
+			6 bits for y
+			6 bits for y
+			8 bits for id (unused)
+			2 bits for ambient occlusion (unused)
+		*/
+		uint32_t packageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t block_id = 0, uint8_t ao = 0);
+	private:
 		Block m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 		//Render Data
