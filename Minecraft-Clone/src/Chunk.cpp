@@ -14,17 +14,19 @@ namespace RealEngine {
 	}
 	
     void Chunk::GenerateMesh() {
-		RE_PROFILE_FUNCTION();
-        std::vector<uint32_t> vertices;
-        std::vector<uint32_t> indices;
+        RE_PROFILE_FUNCTION();
+        static thread_local std::vector<uint32_t> vertices;
+        static thread_local std::vector<uint32_t> indices;
         uint32_t index = 0;
+        size_t vertexCount = 0;
+        size_t indexCount = 0;
 
         auto isBlockVisible = [&](int x, int y, int z) {
             if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
                 return false;
             }
             return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] != Block::Air;
-            };
+        };
 
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -36,94 +38,124 @@ namespace RealEngine {
                     // Check each face of the block
                     if (!isBlockVisible(x + 1, y, z)) {
                         // Add vertices and indices for the positive X face
-                        vertices.insert(vertices.end(), {
-                            packageData(x + 1, y, z),
-                            packageData(x + 1, y + 1, z),
-                            packageData(x + 1, y + 1, z + 1),
-                            packageData(x + 1, y, z + 1)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x + 1, y, z);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
+                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                     if (!isBlockVisible(x - 1, y, z)) {
                         // Add vertices and indices for the negative X face
-                        vertices.insert(vertices.end(), {
-                            packageData(x, y, z),
-                            packageData(x, y + 1, z),
-                            packageData(x, y + 1, z + 1),
-                            packageData(x, y, z + 1)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x, y, z);
+                        vertices[vertexCount++] = packageData(x, y + 1, z);
+                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
+                        vertices[vertexCount++] = packageData(x, y, z + 1);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                     if (!isBlockVisible(x, y + 1, z)) {
                         // Add vertices and indices for the positive Y face
-                        vertices.insert(vertices.end(), {
-                            packageData(x, y + 1, z),
-                            packageData(x + 1, y + 1, z),
-                            packageData(x + 1, y + 1, z + 1),
-                            packageData(x, y + 1, z + 1)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x, y + 1, z);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
+                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                     if (!isBlockVisible(x, y - 1, z)) {
                         // Add vertices and indices for the negative Y face
-                        vertices.insert(vertices.end(), {
-                            packageData(x, y, z),
-                            packageData(x + 1, y, z),
-                            packageData(x + 1, y, z + 1),
-                            packageData(x, y, z + 1)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x, y, z);
+                        vertices[vertexCount++] = packageData(x + 1, y, z);
+                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
+                        vertices[vertexCount++] = packageData(x, y, z + 1);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                     if (!isBlockVisible(x, y, z + 1)) {
                         // Add vertices and indices for the positive Z face
-                        vertices.insert(vertices.end(), {
-                            packageData(x, y, z + 1),
-                            packageData(x + 1, y, z + 1),
-                            packageData(x + 1, y + 1, z + 1),
-                            packageData(x, y + 1, z + 1)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x, y, z + 1);
+                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
+                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                     if (!isBlockVisible(x, y, z - 1)) {
                         // Add vertices and indices for the negative Z face
-                        vertices.insert(vertices.end(), {
-                            packageData(x, y, z),
-                            packageData(x + 1, y, z),
-                            packageData(x + 1, y + 1, z),
-                            packageData(x, y + 1, z)
-                        });
-                        indices.insert(indices.end(), {
-                            index, index + 1, index + 2,
-                            index, index + 2, index + 3
-                        });
+                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+                        vertices[vertexCount++] = packageData(x, y, z);
+                        vertices[vertexCount++] = packageData(x + 1, y, z);
+                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
+                        vertices[vertexCount++] = packageData(x, y + 1, z);
+
+                        if (indexCount + 6 > indices.size()) {
+                            indices.resize(indexCount + 6);
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 1;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index;
+                            indices[indexCount++] = index + 2;
+                            indices[indexCount++] = index + 3;
+                        }
                         index += 4;
                     }
                 }
             }
         }
 
-        m_IBO = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());
-        m_VBO = VertexBuffer::Create(vertices.data(), (uint32_t)vertices.size() * (uint32_t)sizeof(float));
+        m_IBO = IndexBuffer::Create(indices.data(), (uint32_t)indexCount);
+        m_VBO = VertexBuffer::Create(vertices.data(), (uint32_t)vertexCount * (uint32_t)sizeof(float));
         m_VBO->SetLayout(BufferAttributes{
             { DataType::Uint }
         });
