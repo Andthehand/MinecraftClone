@@ -1,18 +1,27 @@
 #type vertex
-#version 420 core
+#version 450
 
-// 7 bits for x
-// 7 bits for y
-// 7 bits for y
-// 8 bits for id (unused)
-// 2 bits for ambient occlusion (unused)
+// 7 bits for x						(0)
+// 7 bits for y						(7)
+// 7 bits for y						(14)
+// 2 bits for UV					(21)
+// 2 bits for side					(23)
+// 2 bits for ambient occlusion (unused)(25)
 layout (location = 0) in uint aPackage;
-
-#define Position_Bitmask uint(0x7F)
+layout (location = 1) in uint aID;
 
 uniform Camera {
 	mat4 u_ViewProjection;
 };
+
+out vec3 v_TexCoord;
+
+#define Position_Bitmask uint(0x7F)
+
+const vec2 coords[2][4] = vec2[][](
+	vec2[](vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)),
+	vec2[](vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(1.0f, 1.0f))
+);
 
 vec4 unpackVertex() {
     float x = float(aPackage & Position_Bitmask);          // Extract 7 bits for x
@@ -21,14 +30,28 @@ vec4 unpackVertex() {
     return vec4(x, y, z + 1, 1.0f);
 }
 
+vec3 unpackTextureCoords() {
+	uint UV = (aPackage >> 21) & 0x03;
+	uint Side = (aPackage>> 23) & 0x03;
+
+	return vec3(coords[Side][UV], aID);
+}
+
 void main() {
+	v_TexCoord = unpackTextureCoords();
+
 	gl_Position = u_ViewProjection * unpackVertex();
 }
 
 #type fragment
-#version 420 core
+#version 450
+uniform sampler2DArray ourTexture;
+
+in vec3 v_TexCoord;
+
 out vec4 FragColor;
 
 void main() {
-   FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+   FragColor = texture(ourTexture, v_TexCoord);
+   // FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }

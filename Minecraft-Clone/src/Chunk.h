@@ -3,19 +3,24 @@
 
 #include <cstdint>
 
-#define CHUNK_SIZE 64
+#include "Block.h"
+
+#define CHUNK_SIZE 1
 
 namespace RealEngine {
-	enum Block : uint8_t {
-		Air = 0,
-		Grass = 1,
-		Dirt = 2,
-		Stone = 3,
-		Sand = 4,
-		Water = 5,
-		Leaves = 6,
-		Wood = 7
+	PACKED_STRUCT(VertexData) {
+		/*
+			7 bits for x						(0)
+			7 bits for y						(7)
+			7 bits for y						(14)
+			2 bits for UV						(21)
+			2 bits for side						(23)
+			2 bits for ambient occlusion (unused)(25)
+		*/
+		uint32_t package;
+		uint32_t block_id;
 	};
+
 
 	class Chunk {
 	public:
@@ -26,14 +31,7 @@ namespace RealEngine {
 
 		void Render();
 	private:
-		/* 
-			7 bits for x
-			7 bits for y
-			7 bits for y
-			8 bits for id (unused)
-			2 bits for ambient occlusion (unused)
-		*/
-		uint32_t packageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t block_id = 0, uint8_t ao = 0);
+		VertexData PackageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t uv, uint8_t side, uint8_t ao, uint32_t block_id);
 	private:
 		Block m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
