@@ -12,7 +12,7 @@ namespace RealEngine {
 
 		GenerateMesh();
 	}
-	
+					
     void Chunk::GenerateMesh() {
         RE_PROFILE_FUNCTION();
         static thread_local std::vector<uint32_t> vertices;
@@ -23,9 +23,26 @@ namespace RealEngine {
 
         auto isBlockVisible = [&](int x, int y, int z) {
             if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
-                return false;
+                return true;
             }
-            return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] != Block::Air;
+            return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == Block::Air;
+        };
+
+        auto addFace = [&](uint32_t v1, uint32_t v2, uint32_t v3, uint32_t v4) {
+            if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
+            vertices[vertexCount++] = v1;
+            vertices[vertexCount++] = v2;
+            vertices[vertexCount++] = v3;
+            vertices[vertexCount++] = v4;
+
+            if (indexCount + 6 > indices.size()) indices.resize(indexCount + 6);
+            indices[indexCount++] = index;
+            indices[indexCount++] = index + 1;
+            indices[indexCount++] = index + 2;
+            indices[indexCount++] = index;
+            indices[indexCount++] = index + 2;
+            indices[indexCount++] = index + 3;
+            index += 4;
         };
 
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -36,119 +53,23 @@ namespace RealEngine {
                     }
 
                     // Check each face of the block
-                    if (!isBlockVisible(x + 1, y, z)) {
-                        // Add vertices and indices for the positive X face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x + 1, y, z);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
-                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x + 1, y, z)) {
+                        addFace(packageData(x + 1, y, z), packageData(x + 1, y + 1, z), packageData(x + 1, y + 1, z + 1), packageData(x + 1, y, z + 1));
                     }
-                    if (!isBlockVisible(x - 1, y, z)) {
-                        // Add vertices and indices for the negative X face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x, y, z);
-                        vertices[vertexCount++] = packageData(x, y + 1, z);
-                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
-                        vertices[vertexCount++] = packageData(x, y, z + 1);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x - 1, y, z)) {
+                        addFace(packageData(x, y, z), packageData(x, y + 1, z), packageData(x, y + 1, z + 1), packageData(x, y, z + 1));
                     }
-                    if (!isBlockVisible(x, y + 1, z)) {
-                        // Add vertices and indices for the positive Y face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x, y + 1, z);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
-                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x, y + 1, z)) {
+                        addFace(packageData(x, y + 1, z), packageData(x + 1, y + 1, z), packageData(x + 1, y + 1, z + 1), packageData(x, y + 1, z + 1));
                     }
-                    if (!isBlockVisible(x, y - 1, z)) {
-                        // Add vertices and indices for the negative Y face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x, y, z);
-                        vertices[vertexCount++] = packageData(x + 1, y, z);
-                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
-                        vertices[vertexCount++] = packageData(x, y, z + 1);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x, y - 1, z)) {
+                        addFace(packageData(x, y, z), packageData(x + 1, y, z), packageData(x + 1, y, z + 1), packageData(x, y, z + 1));
                     }
-                    if (!isBlockVisible(x, y, z + 1)) {
-                        // Add vertices and indices for the positive Z face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x, y, z + 1);
-                        vertices[vertexCount++] = packageData(x + 1, y, z + 1);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z + 1);
-                        vertices[vertexCount++] = packageData(x, y + 1, z + 1);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x, y, z + 1)) {
+                        addFace(packageData(x, y, z + 1), packageData(x + 1, y, z + 1), packageData(x + 1, y + 1, z + 1), packageData(x, y + 1, z + 1));
                     }
-                    if (!isBlockVisible(x, y, z - 1)) {
-                        // Add vertices and indices for the negative Z face
-                        if (vertexCount + 4 > vertices.size()) vertices.resize(vertexCount + 4);
-                        vertices[vertexCount++] = packageData(x, y, z);
-                        vertices[vertexCount++] = packageData(x + 1, y, z);
-                        vertices[vertexCount++] = packageData(x + 1, y + 1, z);
-                        vertices[vertexCount++] = packageData(x, y + 1, z);
-
-                        if (indexCount + 6 > indices.size()) {
-                            indices.resize(indexCount + 6);
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 1;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index;
-                            indices[indexCount++] = index + 2;
-                            indices[indexCount++] = index + 3;
-                        }
-                        index += 4;
+                    if (isBlockVisible(x, y, z - 1)) {
+                        addFace(packageData(x, y, z), packageData(x + 1, y, z), packageData(x + 1, y + 1, z), packageData(x, y + 1, z));
                     }
                 }
             }
@@ -170,12 +91,12 @@ namespace RealEngine {
 	}
 
     uint32_t Chunk::packageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t block_id, uint8_t ao) {
-        uint32_t tempx = (x_pos & 0x3F);
-		uint32_t tempy = (y_pos & 0x3F) << 6;
-		uint32_t tempz = (z_pos & 0x3F) << 12;
-		uint32_t tempid = (block_id & 0xFF) << 18;
-		uint32_t tempeo = (ao & 0x3) << 26;
-		uint32_t ret = tempx | tempy | tempz | tempid | tempeo;
+        uint32_t tempx = (x_pos & 0x7F);
+		uint32_t tempy = (y_pos & 0x7F) << 7;
+		uint32_t tempz = (z_pos & 0x7F) << 14;
+		uint32_t tempid = (block_id & 0xFF) << 20;
+		uint32_t tempeao = (ao & 0x3) << 28;
+		uint32_t ret = tempx | tempy | tempz | tempid | tempeao;
 		return ret;
     }
 }

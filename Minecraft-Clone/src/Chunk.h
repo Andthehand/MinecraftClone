@@ -27,9 +27,9 @@ namespace RealEngine {
 		void Render();
 	private:
 		/* 
-			6 bits for x
-			6 bits for y
-			6 bits for y
+			7 bits for x
+			7 bits for y
+			7 bits for y
 			8 bits for id (unused)
 			2 bits for ambient occlusion (unused)
 		*/
