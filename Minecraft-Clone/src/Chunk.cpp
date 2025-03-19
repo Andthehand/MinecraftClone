@@ -5,7 +5,7 @@ namespace RealEngine {
 		for (int x = 0; x < CHUNK_SIZE; x++) {
 			for (int y = 0; y < CHUNK_SIZE; y++) {
 				for (int z = 0; z < CHUNK_SIZE; z++) {
-					m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = Block::Grass;
+					m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = BasicBlockTypes::Grass;
 				}
 			}
 		}
@@ -25,7 +25,7 @@ namespace RealEngine {
             if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
                 return true;
             }
-            return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == Block::Air;
+            return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == BasicBlockTypes::Air;
         };
 
         auto addFace = [&](VertexData v1, VertexData v2, VertexData v3, VertexData v4) {
@@ -48,7 +48,7 @@ namespace RealEngine {
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
-                    if (m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == Block::Air) {
+                    if (m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == BasicBlockTypes::Air) {
                         continue;
                     }
 

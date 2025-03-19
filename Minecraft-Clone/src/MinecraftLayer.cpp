@@ -3,12 +3,12 @@
 #include "Block.h"
 
 #include <imgui.h>
+#include <ryml.hpp>
 
 namespace RealEngine {
 	MinecraftLayer::MinecraftLayer()
 		: Layer("MinecraftLayer") {
 	}
-
 
 	void MinecraftLayer::OnAttach() {
 		RE_PROFILE_FUNCTION();
@@ -25,6 +25,8 @@ namespace RealEngine {
 		m_UniformBuffer = UniformBuffer::Create(&color, sizeof(glm::mat4), 0);
 
 		m_Camera = EditorCamera(90.0f, 1.778f, 0.1f, 1000.0f);
+
+		BlockHelper::ReadBlockDataYaml("assets/blocks/blocks.yaml");
 	}
 
 	void MinecraftLayer::OnUpdate(float deltaTime) {

@@ -33,7 +33,7 @@ namespace RealEngine {
 	private:
 		VertexData PackageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t uv, uint8_t side, uint8_t ao, uint32_t block_id);
 	private:
-		Block m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+		BlockType m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 		//Render Data
 		Ref<VertexArray> m_VAO;
