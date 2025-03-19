@@ -45,17 +45,15 @@ namespace RealEngine {
             index += 4;
         };
 
-        for (int x = 0; x < CHUNK_SIZE; x++) {
-            for (int y = 0; y < CHUNK_SIZE; y++) {
-                for (int z = 0; z < CHUNK_SIZE; z++) {
+        for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
+            for (uint8_t y = 0; y < CHUNK_SIZE; y++) {
+                for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
                     if (m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == BasicBlockTypes::Air) {
                         continue;
                     }
 
                     // Check each face of the block
                     if (isBlockVisible(x + 1, y, z)) {
-						uint8_t uv = 0;
-
 						// Right face
                         if (isBlockVisible(x + 1, y, z)) {
                             uint8_t uv = 0;

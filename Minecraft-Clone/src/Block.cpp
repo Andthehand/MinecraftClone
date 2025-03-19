@@ -15,7 +15,8 @@ namespace RealEngine {
 			return it->second;
 		}
 
-		RE_ASSERT(false, "Block type not found for name: {}", blockName);
+		RE_WARN("Block type not found for name: {}", blockName);
+		RE_ASSERT(false);
 		return 0; // Return an invalid block type/air if not found
 	}
 
