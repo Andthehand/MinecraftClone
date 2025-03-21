@@ -19,11 +19,11 @@ namespace RealEngine {
 
 
 	struct Block {
-		std::string Name;
-		BlockTexture Texture;
-
-		// This might not be needed
+		std::string InternalName;
 		BlockType Id;
+
+		std::string DisplayName;
+		BlockTexture Texture;
 	};
 
 	class BlockHelper {
