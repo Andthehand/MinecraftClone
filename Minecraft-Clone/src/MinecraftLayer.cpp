@@ -14,7 +14,7 @@ namespace RealEngine {
 		RE_PROFILE_FUNCTION();
 		m_BlockTextures = Texture2DArray::Create({
 			"assets/blocks/Grass_Side.png",
-			"assets/blocks/Grass_Bottom.png",
+			"assets/blocks/Dirt.png",
 			"assets/blocks/Gravel.png",
 			"assets/blocks/Oak_Plank.png",
 		});

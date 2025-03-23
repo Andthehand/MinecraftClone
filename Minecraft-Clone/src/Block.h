@@ -12,11 +12,10 @@ namespace RealEngine {
 	};
 
 	struct BlockTexture {
-		uint32_t BottomFaceID;
-		uint32_t SideFaceID;
-		uint32_t TopFaceID;
+		uint32_t BottomFaceID = 0;
+		uint32_t SideFaceID = 0;
+		uint32_t TopFaceID = 0;
 	};
-
 
 	struct Block {
 		std::string InternalName;
@@ -37,5 +36,6 @@ namespace RealEngine {
 	private:
 		static std::vector<Block> s_BlockMap;
 		static std::unordered_map<StringHash, BlockType> s_BlockLookup;
+		static Ref<Texture2DArray> s_BlockTextureArray;
 	};
 }

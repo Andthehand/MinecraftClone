@@ -1,40 +1,64 @@
 #include "Block.h"
 
+#include <fstream>
+
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 
 namespace RealEngine {
 	std::vector<Block> BlockHelper::s_BlockMap;
 	std::unordered_map<StringHash, BlockType> BlockHelper::s_BlockLookup;
+	Ref<Texture2DArray> BlockHelper::s_BlockTextureArray;
 
+	struct YAMLBlockTexture {
+		// These could be paths but it's easier to use strings
+		std::string SideFace;
+		std::string BottomFace;
+		std::string TopFace;
 
-	void write(ryml::NodeRef* n, std::vector<Block>& seq) {
-		*n |= ryml::SEQ;
-		for (auto const& v : seq)
-			n->append_child() << v;
-	}
+		uint32_t NumTextures;
+	};
 
-	void write(ryml::NodeRef* n, Block const& val) {
-		*n |= ryml::MAP;
+	struct YAMLBlockData {
+		std::string InternalName;
+		BlockType Id;
+		std::string DisplayName;
+		YAMLBlockTexture Texture;
+	};
 
-        ryml::NodeRef block_tree = n->append_child() << ryml::key(val.InternalName);
-        block_tree |= ryml::MAP;
-        block_tree.append_child() << ryml::key("DisplayName") << val.DisplayName;
-        block_tree.append_child() << ryml::key("Id") << val.Id;
-	}
-
-	bool read(ryml::ConstNodeRef const& n, Block* val) {
+	// This function reads a single YAMLBlockData from a YAML node
+	bool read(ryml::ConstNodeRef const& n, YAMLBlockData* val) {
 		ryml::ConstNodeRef node = n.first_child(); // Get the first child node which contains the block data
 
+		// Read the block data
 		ryml::csubstr key = node.key();
 		val->InternalName = std::string(key.begin(), key.end());
 		node["DisplayName"] >> val->DisplayName;
 		node["Id"] >> val->Id;
+		
+		// Read the texture data
+		ryml::ConstNodeRef texture_node = node["Textures"];
+		val->Texture.NumTextures = (uint32_t)texture_node.num_children();
+		switch (val->Texture.NumTextures) {
+			case 1:
+				texture_node["SideFace"] >> val->Texture.SideFace;
+				break;
+			case 2:
+				texture_node["SideFace"] >> val->Texture.SideFace;
+				texture_node["BottomFace"] >> val->Texture.BottomFace;
+				break;
+			case 3:
+				texture_node["SideFace"] >> val->Texture.SideFace;
+				texture_node["BottomFace"] >> val->Texture.BottomFace;
+				texture_node["TopFace"] >> val->Texture.TopFace;
+				break;
+		}
 
 		return true;
 	}
 
-    bool read(ryml::ConstNodeRef const& n, std::vector<Block>* val) {
+	// This function reads a vector of YAMLBlockData from a YAML node
+    bool read(ryml::ConstNodeRef const& n, std::vector<YAMLBlockData>* val) {
         val->resize(static_cast<size_t>(n.num_children())); // Taken from https://github.com/biojppm/rapidyaml/blob/master/samples/quickstart.cpp#L3664
 
         size_t pos = 0;
@@ -60,34 +84,90 @@ namespace RealEngine {
 	void BlockHelper::ReadBlockDataYaml(const std::filesystem::path& yamlFile) {
 		RE_PROFILE_FUNCTION();
 
-		std::vector<Block> test;
-		test.push_back({ "Grass", BasicBlockTypes::Grass, "Grass Block", { 1, 2, 3 } });
-		test.push_back({ "Air", BasicBlockTypes::Air, "Air Block", { 0, 0, 0 } });
+		RE_INFO("Loading block data from YAML file: {}", yamlFile.string());
 
-		ryml::Tree tree;
-		ryml::NodeRef root = tree.rootref();
-		
-		root << test;
+		std::string content;
+		{
+			RE_PROFILE_SCOPE("Read YAML File");
 
-		std::string yamlFileStr = ryml::emitrs_yaml<std::string>(tree);
-
-		std::vector<Block> blocks;
-		root >> blocks; // Create a new Block object
-
-
-		std::ifstream in(yamlFile, std::ifstream::in | std::ifstream::binary);
-		if (!in.is_open()) {
-			RE_ASSERT(false, "Failed to open block data YAML file");
-			return;
+			// Read in file
+			std::ifstream in(yamlFile, std::ifstream::in | std::ifstream::binary);
+			if (!in.is_open()) {
+				RE_ASSERT(false, "Failed to open block data YAML file");
+				return;
+			}
+			auto size = std::filesystem::file_size(yamlFile);
+			content = std::string(size, '\0');
+			in.read(&content[0], size);
 		}
-		auto size = std::filesystem::file_size(yamlFile);
-		std::string content(size, '\0');
-		in.read(&content[0], size);
+
+		std::vector<YAMLBlockData> blocks;
+		{
+			RE_PROFILE_SCOPE("Parse YAML File");
+
+			// Parse File
+			std::string fileName = yamlFile.filename().string();
+			const ryml::Tree tree = ryml::parse_in_place(ryml::to_substr(fileName), ryml::to_substr(content));
+			ryml::ConstNodeRef root = tree.rootref();
+
+			// Read in the blocks
+			root >> blocks; // Create a new Block object
+		}
+
+		std::vector<std::filesystem::path> texturePaths;
+		{
+			RE_PROFILE_SCOPE("Process Block Data");
+
+			// Populate the BlockMap and BlockLookup
+			s_BlockMap.reserve(blocks.size());
+			s_BlockLookup.reserve(blocks.size());
+
+			uint32_t currrentTextureID = 0;
+			std::string assetPath = "assets/blocks/";
+			for (const auto& yamlBlock : blocks) {
+				Block block;
+				block.InternalName = yamlBlock.InternalName;
+				block.Id = yamlBlock.Id;
+				block.DisplayName = yamlBlock.DisplayName;
+
+				// Assign the texture IDs
+				switch (yamlBlock.Texture.NumTextures) {
+				case 1:
+					block.Texture.TopFaceID = currrentTextureID;
+					block.Texture.BottomFaceID = currrentTextureID;
+					block.Texture.SideFaceID = currrentTextureID++;
+
+					texturePaths.push_back(assetPath + yamlBlock.Texture.SideFace);
+					break;
+				case 2:
+					block.Texture.TopFaceID = currrentTextureID;
+					block.Texture.BottomFaceID = currrentTextureID++;
+					block.Texture.SideFaceID = currrentTextureID++;
+
+					texturePaths.push_back(assetPath + yamlBlock.Texture.BottomFace);
+					texturePaths.push_back(assetPath + yamlBlock.Texture.SideFace);
+					break;
+				case 3:
+					block.Texture.TopFaceID = currrentTextureID++;
+					block.Texture.BottomFaceID = currrentTextureID++;
+					block.Texture.SideFaceID = currrentTextureID++;
+
+					texturePaths.push_back(assetPath + yamlBlock.Texture.TopFace);
+					texturePaths.push_back(assetPath + yamlBlock.Texture.BottomFace);
+					texturePaths.push_back(assetPath + yamlBlock.Texture.SideFace);
+					break;
+				}
+
+				s_BlockMap.push_back(block);
+				s_BlockLookup[StringHash(block.InternalName)] = block.Id;
+
+				RE_INFO("Loaded block: {} with ID: {} and {} textures", block.InternalName, block.Id, yamlBlock.Texture.NumTextures);
+			}
+		}
 
 
-		std::string fileName = yamlFile.filename().string();
-		//const ryml::Tree tree = ryml::parse_in_place(ryml::to_substr(fileName), ryml::to_substr(content));
-
-
+		// Load the textures
+		RE_INFO("Loading block textures...");
+		s_BlockTextureArray = Texture2DArray::Create(texturePaths);
 	}
 }

@@ -1,0 +1,42 @@
+- air:
+    DisplayName: Air
+    Id: 0
+    Textures:
+- bedrock:
+    DisplayName: Bedrock
+    Id: 1
+    Textures:
+      SideFace: Bedrock.png
+- grass:
+    DisplayName: Grass
+    Id: 2
+    Textures:
+      SideFace: Grass_Side.png
+      BottomFace: Dirt.png
+      TopFace: Grass_Top.png
+- dirt:
+    DisplayName: Dirt
+    Id: 3
+    Textures:
+      SideFace: Dirt.png
+- gravel:
+    DisplayName: Gravel
+    Id: 4
+    Textures:
+      SideFace: Gravel.png
+- sand:
+    DisplayName: Sand
+    Id: 5
+    Textures:
+      SideFace: Sand.png
+- oakLog:
+    DisplayName: Oak Log
+    Id: 6
+    Textures:
+      SideFace: Oak_Log_Side.png
+      BottomFace: Oak_Log_Top.png
+- oakPlanks:
+    DisplayName: Oak Plank
+    Id: 7
+    Textures:
+      SideFace: Oak_Plank.png
