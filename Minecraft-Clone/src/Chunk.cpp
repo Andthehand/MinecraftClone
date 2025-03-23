@@ -1,6 +1,24 @@
 #include "Chunk.h"
 
 namespace RealEngine {
+    namespace Utils {
+        inline std::vector<uint32_t> PopulateIndices(uint32_t quadCount) {
+			std::vector<uint32_t> indices;
+			indices.reserve(quadCount * 6); // 6 indices per quad (2 triangles)
+			for (uint32_t i = 0; i < quadCount; ++i) {
+				uint32_t baseIndex = i * 4;
+				indices.push_back(baseIndex);
+				indices.push_back(baseIndex + 1);
+				indices.push_back(baseIndex + 2);
+                indices.push_back(baseIndex);
+                indices.push_back(baseIndex + 2);
+				indices.push_back(baseIndex + 3);
+			}
+
+			return indices;
+        }
+    }
+
 	Chunk::Chunk() {
 		for (int x = 0; x < CHUNK_SIZE; x++) {
 			for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -15,9 +33,10 @@ namespace RealEngine {
 					
     void Chunk::GenerateMesh() {
         RE_PROFILE_FUNCTION();
+		constexpr uint32_t worstCaseQuadCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6); // 6 quads per block in worst case (all sides visible)
+        static thread_local std::vector<uint32_t> indices = Utils::PopulateIndices(worstCaseQuadCount);
         static thread_local std::vector<VertexData> vertices;
-        static thread_local std::vector<uint32_t> indices;
-        uint32_t index = 0;
+        static Ref<IndexBuffer> IBO = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());;
         size_t vertexCount = 0;
         size_t indexCount = 0;
 
@@ -35,14 +54,7 @@ namespace RealEngine {
             vertices[vertexCount++] = v3;
             vertices[vertexCount++] = v4;
 
-            if (indexCount + 6 > indices.size()) indices.resize(indexCount + 6);
-            indices[indexCount++] = index;
-            indices[indexCount++] = index + 1;
-            indices[indexCount++] = index + 2;
-            indices[indexCount++] = index;
-            indices[indexCount++] = index + 2;
-            indices[indexCount++] = index + 3;
-            index += 4;
+			indexCount += 6; // 2 triangles per face, 3 indices per triangle
         };
 
         for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
@@ -52,49 +64,46 @@ namespace RealEngine {
                         continue;
                     }
 
-                    // Check each face of the block
+					// Right face
                     if (isBlockVisible(x + 1, y, z)) {
-						// Right face
-                        if (isBlockVisible(x + 1, y, z)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0));
-                        }
+                        uint8_t uv = 0;
+                        addFace(PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0));
+                    }
 
-						// Left face
-                        if (isBlockVisible(x - 1, y, z)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x, y, z + 1, uv++, 0, 0, 0), PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x, y + 1, z, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
-                        }
+					// Left face
+                    if (isBlockVisible(x - 1, y, z)) {
+                        uint8_t uv = 0;
+                        addFace(PackageData(x, y, z + 1, uv++, 0, 0, 0), PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x, y + 1, z, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
+                    }
                         
-						// Top face
-                        if (isBlockVisible(x, y + 1, z)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
-                        }
+					// Top face
+                    if (isBlockVisible(x, y + 1, z)) {
+                        uint8_t uv = 0;
+                        addFace(PackageData(x, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
+                    }
 
-						// Bottom face
-                        if (isBlockVisible(x, y - 1, z)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x, y, z + 1, uv++, 0, 0, 0));
-                        }
+					// Bottom face
+                    if (isBlockVisible(x, y - 1, z)) {
+                        uint8_t uv = 0;
+                        addFace(PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x, y, z + 1, uv++, 0, 0, 0));
+                    }
 
-						// Front face
-                        if (isBlockVisible(x, y, z + 1)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
-                        }
+					// Front face
+                    if (isBlockVisible(x, y, z + 1)) {
+                        uint8_t uv = 0;
+                        addFace(PackageData(x, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y, z + 1, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z + 1, uv++, 0, 0, 0), PackageData(x, y + 1, z + 1, uv++, 0, 0, 0));
+                    }
 
-						// Back face
-                        if (isBlockVisible(x, y, z - 1)) {
-                            uint8_t uv = 0;
-                            addFace(PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x, y + 1, z, uv++, 0, 0, 0));
-                        }
+					// Back face
+                    if (isBlockVisible(x, y, z - 1)) {
+                        uint8_t uv = 0;
+                        addFace(PackageData(x, y, z, uv++, 0, 0, 0), PackageData(x + 1, y, z, uv++, 0, 0, 0), PackageData(x + 1, y + 1, z, uv++, 0, 0, 0), PackageData(x, y + 1, z, uv++, 0, 0, 0));
                     }
                 }
             }
         }
 
-        m_IBO = IndexBuffer::Create(indices.data(), (uint32_t)indexCount);
+		RE_ASSERT(indexCount <= indices.size(), "Index count exceeds pre-allocated IBO size");
         m_VBO = VertexBuffer::Create(vertices.data(), (uint32_t)vertexCount * (uint32_t)sizeof(VertexData));
         m_VBO->SetLayout(BufferAttributes{
             { DataType::Uint },
@@ -103,7 +112,7 @@ namespace RealEngine {
 
         m_VAO = VertexArray::Create();
         m_VAO->SetVertexBuffer(m_VBO);
-        m_VAO->SetIndexBuffer(m_IBO);
+        m_VAO->SetIndexBuffer(IBO);
     }
 
 	void Chunk::Render() {

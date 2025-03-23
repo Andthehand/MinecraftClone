@@ -69,7 +69,7 @@ namespace RealEngine {
         return true;
     }
 
-	BlockType BlockHelper::GetBlockType(const std::string& blockName) {
+	inline BlockType BlockHelper::GetBlockType(const std::string& blockName) {
 		RE_PROFILE_FUNCTION();
 		
 		auto it = s_BlockLookup.find(StringHash(blockName));
@@ -84,7 +84,7 @@ namespace RealEngine {
 	void BlockHelper::ReadBlockDataYaml(const std::filesystem::path& yamlFile) {
 		RE_PROFILE_FUNCTION();
 
-		RE_INFO("Loading block data from YAML file: {}", yamlFile.string());
+		RE_INFO("Loading block data from YAML file: {}", yamlFile);
 
 		std::string content;
 		{
@@ -164,7 +164,6 @@ namespace RealEngine {
 				RE_INFO("Loaded block: {} with ID: {} and {} textures", block.InternalName, block.Id, yamlBlock.Texture.NumTextures);
 			}
 		}
-
 
 		// Load the textures
 		RE_INFO("Loading block textures...");

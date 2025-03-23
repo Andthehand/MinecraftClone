@@ -30,7 +30,7 @@ namespace RealEngine {
 		BlockHelper() = delete;
 		~BlockHelper() = delete;
 
-		static BlockType GetBlockType(const std::string& blockName);
+		static inline BlockType GetBlockType(const std::string& blockName);
 
 		static void ReadBlockDataYaml(const std::filesystem::path& yamlFile);
 	private:

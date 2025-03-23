@@ -5,7 +5,7 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE 1
+#define CHUNK_SIZE 2
 
 namespace RealEngine {
 	PACKED_STRUCT(VertexData) {
@@ -38,6 +38,5 @@ namespace RealEngine {
 		//Render Data
 		Ref<VertexArray> m_VAO;
 		Ref<VertexBuffer> m_VBO;
-		Ref<IndexBuffer> m_IBO;
 	};
 }
