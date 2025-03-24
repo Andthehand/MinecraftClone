@@ -18,8 +18,6 @@ namespace RealEngine {
 
 		EditorCamera m_Camera;
 
-		Ref<Texture2DArray> m_BlockTextures;
-
-		Chunk m_Chunk;
+		Scope<Chunk> m_Chunk;
 	};
 }

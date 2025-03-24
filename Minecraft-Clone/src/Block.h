@@ -8,7 +8,9 @@ namespace RealEngine {
 
 	enum BasicBlockTypes : BlockType {
 		Air = 0,
-		Grass = 1
+		Bedrock = 1,
+		Grass = 2,
+		Dirt = 3,
 	};
 
 	struct BlockTexture {
@@ -27,12 +29,20 @@ namespace RealEngine {
 
 	class BlockHelper {
 	public:
-		BlockHelper() = delete;
-		~BlockHelper() = delete;
-
-		static inline BlockType GetBlockType(const std::string& blockName);
+		static BlockType GetBlockType(const std::string& blockName);
+		
+		static inline uint32_t GetBlockTextureSideID(BlockType blockId)   { return s_BlockMap[blockId].Texture.SideFaceID;   }
+		static inline uint32_t GetBlockTextureTopID(BlockType blockId)    { return s_BlockMap[blockId].Texture.TopFaceID;    }
+		static inline uint32_t GetBlockTextureBottomID(BlockType blockId) { return s_BlockMap[blockId].Texture.BottomFaceID; }
 
 		static void ReadBlockDataYaml(const std::filesystem::path& yamlFile);
+
+		//Bind texture
+		static inline void BindBlockTextureArray() {
+			RE_ASSERT(s_BlockTextureArray, "Block texture array is not initialized");
+
+			s_BlockTextureArray->Bind();
+		}
 	private:
 		static std::vector<Block> s_BlockMap;
 		static std::unordered_map<StringHash, BlockType> s_BlockLookup;

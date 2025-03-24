@@ -18,9 +18,8 @@ out vec3 v_TexCoord;
 
 #define Position_Bitmask uint(0x7F)
 
-const vec2 coords[2][4] = vec2[][](
-	vec2[](vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)),
-	vec2[](vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(1.0f, 1.0f))
+const vec2 coords[4] = vec2[](
+	vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)
 );
 
 vec4 unpackVertex() {
@@ -32,9 +31,8 @@ vec4 unpackVertex() {
 
 vec3 unpackTextureCoords() {
 	uint UV = (aPackage >> 21) & 0x03;
-	uint Side = (aPackage>> 23) & 0x03;
 
-	return vec3(coords[Side][UV], aID);
+	return vec3(coords[UV], aID);
 }
 
 void main() {

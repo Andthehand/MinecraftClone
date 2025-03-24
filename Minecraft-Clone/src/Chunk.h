@@ -5,7 +5,7 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE 2
+#define CHUNK_SIZE 64
 
 namespace RealEngine {
 	PACKED_STRUCT(VertexData) {
@@ -31,7 +31,7 @@ namespace RealEngine {
 
 		void Render();
 	private:
-		VertexData PackageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t uv, uint8_t side, uint8_t ao, uint32_t block_id);
+		VertexData PackageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t uv, uint8_t ao, uint32_t block_id);
 	private:
 		BlockType m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 

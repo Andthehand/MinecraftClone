@@ -12,13 +12,6 @@ namespace RealEngine {
 
 	void MinecraftLayer::OnAttach() {
 		RE_PROFILE_FUNCTION();
-		m_BlockTextures = Texture2DArray::Create({
-			"assets/blocks/Grass_Side.png",
-			"assets/blocks/Dirt.png",
-			"assets/blocks/Gravel.png",
-			"assets/blocks/Oak_Plank.png",
-		});
-
 		m_Shader = Shader::Create("assets/shaders/basic.shader");
 
 		glm::vec3 color = { 0.0f, 0.0f, 1.0f };
@@ -27,6 +20,7 @@ namespace RealEngine {
 		m_Camera = EditorCamera(90.0f, 1.778f, 0.1f, 1000.0f);
 
 		BlockHelper::ReadBlockDataYaml("assets/blocks/blocks.yaml");
+		m_Chunk = CreateScope<Chunk>();
 	}
 
 	void MinecraftLayer::OnUpdate(float deltaTime) {
@@ -38,8 +32,8 @@ namespace RealEngine {
 		m_UniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 
 		m_Shader->Bind();
-		m_BlockTextures->Bind();
-		m_Chunk.Render();
+		BlockHelper::BindBlockTextureArray();
+		m_Chunk->Render();
 	}
 
 	void MinecraftLayer::OnImGui() {

@@ -17,7 +17,7 @@ namespace RealEngine {
 	Application* CreateApplication(const ApplicationCommandLineArgs& args) {
 		RE_PROFILE_FUNCTION();
 
-		ApplicationSpecification specification = { "Minecraf-Clone", args };
+		ApplicationSpecification specification = { "Minecraft-Clone", args };
 		return new Editor(specification);
 	}
 }

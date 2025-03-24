@@ -6,6 +6,7 @@
 #include <ryml_std.hpp>
 
 namespace RealEngine {
+	// Static member initialization
 	std::vector<Block> BlockHelper::s_BlockMap;
 	std::unordered_map<StringHash, BlockType> BlockHelper::s_BlockLookup;
 	Ref<Texture2DArray> BlockHelper::s_BlockTextureArray;
@@ -69,7 +70,7 @@ namespace RealEngine {
         return true;
     }
 
-	inline BlockType BlockHelper::GetBlockType(const std::string& blockName) {
+	BlockType BlockHelper::GetBlockType(const std::string& blockName) {
 		RE_PROFILE_FUNCTION();
 		
 		auto it = s_BlockLookup.find(StringHash(blockName));
@@ -77,8 +78,8 @@ namespace RealEngine {
 			return it->second;
 		}
 
-		RE_WARN("Block type not found for name: {}", blockName);
-		return 0; // Return an invalid block type/air if not found
+		RE_ASSERT(it != s_BlockLookup.end(), "Block name {} not found in BlockLookup", blockName);
+		return Air; // Return an invalid block type/air if not found
 	}
 
 	void BlockHelper::ReadBlockDataYaml(const std::filesystem::path& yamlFile) {
