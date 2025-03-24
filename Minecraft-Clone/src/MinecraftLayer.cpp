@@ -20,7 +20,9 @@ namespace RealEngine {
 		m_Camera = EditorCamera(90.0f, 1.778f, 0.1f, 1000.0f);
 
 		BlockHelper::ReadBlockDataYaml("assets/blocks/blocks.yaml");
-		m_Chunk = CreateScope<Chunk>();
+		m_Chunk = CreateScope<Chunk>(glm::vec3(0.0f, 0.0f, 0.0f));
+
+		RenderCommands::SetFaceCulling(true);
 	}
 
 	void MinecraftLayer::OnUpdate(float deltaTime) {
@@ -33,7 +35,7 @@ namespace RealEngine {
 
 		m_Shader->Bind();
 		BlockHelper::BindBlockTextureArray();
-		m_Chunk->Render();
+		m_Chunk->Render(m_Shader.get());
 	}
 
 	void MinecraftLayer::OnImGui() {

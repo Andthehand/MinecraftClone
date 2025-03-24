@@ -14,6 +14,8 @@ uniform Camera {
 	mat4 u_ViewProjection;
 };
 
+uniform vec3 u_Offset;
+
 out vec3 v_TexCoord;
 
 #define Position_Bitmask uint(0x7F)
@@ -22,11 +24,11 @@ const vec2 coords[4] = vec2[](
 	vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)
 );
 
-vec4 unpackVertex() {
+vec3 unpackVertex() {
     float x = float(aPackage & Position_Bitmask);          // Extract 7 bits for x
     float y = float((aPackage >> 7) & Position_Bitmask);   // Extract 7 bits for y
     float z = float((aPackage >> 14) & Position_Bitmask);  // Extract 7 bits for z
-    return vec4(x, y, z + 1, 1.0f);
+    return vec3(x, y, z + 1);
 }
 
 vec3 unpackTextureCoords() {
@@ -38,7 +40,7 @@ vec3 unpackTextureCoords() {
 void main() {
 	v_TexCoord = unpackTextureCoords();
 
-	gl_Position = u_ViewProjection * unpackVertex();
+	gl_Position = u_ViewProjection * vec4(u_Offset + unpackVertex(), 1.0f);
 }
 
 #type fragment

@@ -24,16 +24,18 @@ namespace RealEngine {
 
 	class Chunk {
 	public:
-		Chunk();
+		Chunk(const glm::vec3& chunkOffset);
 		~Chunk() = default;
 
 		void GenerateMesh();
 
-		void Render();
+		void Render(Shader* chunkShader);
 	private:
 		VertexData PackageData(uint8_t x_pos, uint8_t y_pos, uint8_t z_pos, uint8_t uv, uint8_t ao, uint32_t block_id);
 	private:
 		BlockType m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+
+		glm::vec3 m_ChunkOffset;
 
 		//Render Data
 		Ref<VertexArray> m_VAO;

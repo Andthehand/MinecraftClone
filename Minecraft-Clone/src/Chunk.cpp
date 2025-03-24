@@ -19,7 +19,8 @@ namespace RealEngine {
         }
     }
 
-	Chunk::Chunk() {
+	Chunk::Chunk(const glm::vec3& chunkOffset) 
+        : m_ChunkOffset(chunkOffset) {
 		RE_PROFILE_FUNCTION();
 
 		BlockType airBlock = Grass;
@@ -78,16 +79,18 @@ namespace RealEngine {
 
                     // Left face
                     if (isBlockVisible(x - 1, y, z)) {
-                        uint8_t uv = 0;
+                        //uint8_t uv = 0;
+
+                        // There is a ghost in the machine that will not let me use uv++ because it inverts the face somehow
                         uint32_t sideTextureID = BlockHelper::GetBlockTextureSideID(block);
-                        addFace(PackageData(x, y, z + 1, uv++, 0, sideTextureID), PackageData(x, y, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z + 1, uv++, 0, sideTextureID));
+                        addFace(PackageData(x, y + 1, z + 1, 0, 0, sideTextureID), PackageData(x, y + 1, z, 1, 0, sideTextureID), PackageData(x, y, z, 2, 0, sideTextureID), PackageData(x, y, z + 1, 3, 0, sideTextureID));
                     }
                         
                     // Top face
                     if (isBlockVisible(x, y + 1, z)) {
                         uint8_t uv = 0;
                         uint32_t sideTextureID = BlockHelper::GetBlockTextureTopID(block);
-                        addFace(PackageData(x, y + 1, z, uv++, 0, sideTextureID), PackageData(x + 1, y + 1, z, uv++, 0, sideTextureID), PackageData(x + 1, y + 1, z + 1, uv++, 0, sideTextureID), PackageData(x, y + 1, z + 1, uv++, 0, sideTextureID));
+                        addFace(PackageData(x + 1, y + 1, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z + 1, uv++, 0, sideTextureID), PackageData(x + 1, y + 1, z + 1, uv++, 0, sideTextureID));
                     }
 
                     // Bottom face
@@ -108,7 +111,7 @@ namespace RealEngine {
                     if (isBlockVisible(x, y, z - 1)) {
                         uint8_t uv = 0;
                         uint32_t sideTextureID = BlockHelper::GetBlockTextureSideID(block);
-                        addFace(PackageData(x, y, z, uv++, 0, sideTextureID), PackageData(x + 1, y, z, uv++, 0, sideTextureID), PackageData(x + 1, y + 1, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z, uv++, 0, sideTextureID));
+                        addFace(PackageData(x + 1, y, z, uv++, 0, sideTextureID), PackageData(x, y, z, uv++, 0, sideTextureID), PackageData(x, y + 1, z, uv++, 0, sideTextureID), PackageData(x + 1, y + 1, z, uv++, 0, sideTextureID));
                     }
                 }
             }
@@ -126,7 +129,9 @@ namespace RealEngine {
         m_VAO->SetIndexBuffer(IBO);
     }
 
-	void Chunk::Render() {
+	void Chunk::Render(Shader* chunkShader) {
+		chunkShader->SetUniformVec3("u_Offset", m_ChunkOffset);
+
 		RenderCommands::DrawIndexed(m_VAO);
 	}
 
