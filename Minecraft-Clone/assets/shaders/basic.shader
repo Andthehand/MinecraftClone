@@ -1,57 +1,60 @@
 #type vertex
 #version 450
 
-// 7 bits for x						(0)
-// 7 bits for y						(7)
-// 7 bits for y						(14)
-// 2 bits for UV					(21)
-// 2 bits for side					(23)
-// 2 bits for ambient occlusion (unused)(25)
-layout (location = 0) in uint aPackage;
-layout (location = 1) in uint aID;
+struct FaceData {
+	vec3 Position;
+    uint Facing;
+};
+
+layout(std430, binding = 2) buffer anotherLayoutName {
+	FaceData Faces[];
+};
 
 uniform Camera {
 	mat4 u_ViewProjection;
 };
 
-uniform vec3 u_Offset;
+layout(binding = 1) uniform usampler2DArray uBlockIDs;
 
-out vec3 v_TexCoord;
+out vec3 TexCoord;
 
-#define Position_Bitmask uint(0x7F)
+// Offsets for our vertices drawing this face
+const vec3 facePositions[6][4] = vec3[6][4] (
+	vec3[4](vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 1.0), vec3(1.0, 1.0, 1.0), vec3(0.0, 1.0, 1.0)),	// FRONT
+	vec3[4](vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0)),	// BACK
+	vec3[4](vec3(0.0, 1.0, 1.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0)),	// LEFT
+	vec3[4](vec3(1.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 1.0)),	// RIGHT
+	vec3[4](vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 1.0)),	// TOP
+	vec3[4](vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 1.0), vec3(0.0, 0.0, 1.0))		// BOTTOM
+);
+
+// Winding order to access the face positions
+const int indices[6] = {0, 1, 2, 0, 2, 3};
 
 const vec2 coords[4] = vec2[](
 	vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)
 );
 
-vec3 unpackVertex() {
-    float x = float(aPackage & Position_Bitmask);          // Extract 7 bits for x
-    float y = float((aPackage >> 7) & Position_Bitmask);   // Extract 7 bits for y
-    float z = float((aPackage >> 14) & Position_Bitmask);  // Extract 7 bits for z
-    return vec3(x, y, z + 1);
-}
-
-vec3 unpackTextureCoords() {
-	uint UV = (aPackage >> 21) & 0x03;
-
-	return vec3(coords[UV], aID);
-}
-
 void main() {
-	v_TexCoord = unpackTextureCoords();
+	const int index = gl_VertexID / 6;
+	const int currVertexID = gl_VertexID % 6;
+	FaceData currentFace = Faces[index];
 
-	gl_Position = u_ViewProjection * vec4(u_Offset + unpackVertex(), 1.0f);
+	currentFace.Position += facePositions[currentFace.Facing][indices[currVertexID]];
+
+	TexCoord = vec3(coords[indices[currVertexID]], texture(uBlockIDs, currentFace.Position));
+	gl_Position = u_ViewProjection * vec4(currentFace.Position, 1.0f);
 }
 
 #type fragment
 #version 450
-uniform sampler2DArray ourTexture;
+layout(binding = 0) uniform sampler2DArray ourTexture;
 
-in vec3 v_TexCoord;
+in vec3 TexCoord;
 
 out vec4 FragColor;
 
 void main() {
-   FragColor = texture(ourTexture, v_TexCoord);
-   // FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+   FragColor = texture(ourTexture, TexCoord);
+   // FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
