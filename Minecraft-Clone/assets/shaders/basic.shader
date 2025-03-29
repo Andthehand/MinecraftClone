@@ -22,17 +22,17 @@ out vec3 TexCoord;
 const vec3 facePositions[6][4] = vec3[6][4] (
 	vec3[4](vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 1.0), vec3(1.0, 1.0, 1.0), vec3(0.0, 1.0, 1.0)),	// FRONT
 	vec3[4](vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0)),	// BACK
-	vec3[4](vec3(0.0, 1.0, 1.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0)),	// LEFT
+	vec3[4](vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), vec3(0.0, 1.0, 0.0)),	// LEFT
 	vec3[4](vec3(1.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 1.0)),	// RIGHT
 	vec3[4](vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 1.0)),	// TOP
 	vec3[4](vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 1.0), vec3(0.0, 0.0, 1.0))		// BOTTOM
 );
 
 // Winding order to access the face positions
-const int indices[6] = {0, 1, 2, 0, 2, 3};
+const int indices[6] = {0, 1, 2, 2, 3, 0};
 
 const vec2 coords[4] = vec2[](
-	vec2(1.0f, 1.0f), vec2(0.0f, 1.0f), vec2(0.0f, 0.0f), vec2(1.0f, 0.0f)
+	vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(1.0f, 1.0f), vec2(0.0f, 1.0f)
 );
 
 void main() {
@@ -40,10 +40,9 @@ void main() {
 	const int currVertexID = gl_VertexID % 6;
 	FaceData currentFace = Faces[index];
 
-	currentFace.Position += facePositions[currentFace.Facing][indices[currVertexID]];
-
+	vec3 vertexPosition = currentFace.Position + facePositions[currentFace.Facing][indices[currVertexID]];
 	TexCoord = vec3(coords[indices[currVertexID]], texture(uBlockIDs, currentFace.Position));
-	gl_Position = u_ViewProjection * vec4(currentFace.Position, 1.0f);
+	gl_Position = u_ViewProjection * vec4(vertexPosition, 1.0f);
 }
 
 #type fragment
