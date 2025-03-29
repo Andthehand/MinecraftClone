@@ -5,7 +5,8 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE 1
+#define CHUNK_SIZE_WIDTH 5
+#define CHUNK_SIZE_HEIGHT 10
 
 namespace RealEngine {
 	class Chunk {
@@ -17,7 +18,7 @@ namespace RealEngine {
 
 		void Render(Shader* chunkShader);
 	private:
-		BlockType m_Blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+		BlockType m_Blocks[CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT];
 
 		glm::vec3 m_ChunkOffset;
 

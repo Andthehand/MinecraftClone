@@ -21,31 +21,32 @@ namespace RealEngine {
         : m_ChunkOffset(chunkOffset) {
 		RE_PROFILE_FUNCTION();
 
-		BlockType defaultBlock = Grass;
-		BlockType testBlock = Dirt;
-		for (int x = 0; x < CHUNK_SIZE; x++) {
-			for (int y = 0; y < CHUNK_SIZE; y++) {
-				for (int z = 0; z < CHUNK_SIZE; z++) {
-					if (x % 2 == 0) {
-						m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = testBlock;
+        for (uint16_t y = 0; y < CHUNK_SIZE_HEIGHT; y++) {
+            for (uint8_t x = 0; x < CHUNK_SIZE_WIDTH; x++) {
+				for (uint8_t z = 0; z < CHUNK_SIZE_WIDTH; z++) {
+					if (y == 0) {
+						m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] = Bedrock;
+					}
+					else if (z % 2 == 0) {
+                        m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] = Dirt;
 					}
                     else {
-                        m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = defaultBlock;
+                        m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] = Grass;
                     }
-				}
+                }
 			}
 		}
 
-		m_BlockArray = Texture2DArray::Create(Texture2DArrayCreateInfo{
-			CHUNK_SIZE, 
-			CHUNK_SIZE, 
-            CHUNK_SIZE,     
+		m_BlockArray = Texture2DArray::Create(Texture2DArrayCreateInfo(
+            CHUNK_SIZE_WIDTH,
+            CHUNK_SIZE_WIDTH,
+            CHUNK_SIZE_HEIGHT,
 			TextureDataType::RED32, 
 			TextureFormat::RED                  
-		});
+		));
 
-        for (uint16_t i = 0; i < CHUNK_SIZE; i++) {
-            m_BlockArray->SetSubTextureData(&m_Blocks[i], i);
+        for (uint16_t y = 0; y < CHUNK_SIZE_HEIGHT; y++) {
+            m_BlockArray->SetSubTextureData(&m_Blocks[y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH], y);
         }
 
 		GenerateMesh();
@@ -64,10 +65,10 @@ namespace RealEngine {
 		};
 
         auto isBlockVisible = [&](int x, int y, int z) {
-            if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            if (x < 0 || x >= CHUNK_SIZE_WIDTH || y < 0 || y >= CHUNK_SIZE_HEIGHT || z < 0 || z >= CHUNK_SIZE_WIDTH) {
                 return true;
             }
-            return m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == BasicBlockTypes::Air;
+            return m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] == BasicBlockTypes::Air;
         };
 
         auto addFace = [&](Utils::VertexData v) {
@@ -81,10 +82,11 @@ namespace RealEngine {
             }
         };
 
-        for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
-            for (uint8_t y = 0; y < CHUNK_SIZE; y++) {
-                for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
-                    if (m_Blocks[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == BasicBlockTypes::Air) {
+        for (uint16_t y = 0; y < CHUNK_SIZE_HEIGHT; y++) {
+            for (uint8_t x = 0; x < CHUNK_SIZE_WIDTH; x++) {
+                for (uint8_t z = 0; z < CHUNK_SIZE_WIDTH; z++) {
+					uint32_t index = z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH;
+                    if (m_Blocks[index] == BasicBlockTypes::Air) {
                         continue;
                     }
 

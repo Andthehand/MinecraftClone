@@ -41,7 +41,7 @@ void main() {
 	FaceData currentFace = Faces[index];
 
 	vec3 vertexPosition = currentFace.Position + facePositions[currentFace.Facing][indices[currVertexID]];
-	TexCoord = vec3(coords[indices[currVertexID]], texture(uBlockIDs, currentFace.Position));
+	TexCoord = vec3(coords[indices[currVertexID]], texture(uBlockIDs, currentFace.Position.xzy));
 	gl_Position = u_ViewProjection * vec4(vertexPosition, 1.0f);
 }
 
