@@ -47,5 +47,6 @@ namespace RealEngine {
 		static std::vector<Block> s_BlockMap;
 		static std::unordered_map<StringHash, BlockType> s_BlockLookup;
 		static Ref<Texture2DArray> s_BlockTextureArray;
+		static Ref<ShaderStorageBuffer> s_SideIDArray;
 	};
 }

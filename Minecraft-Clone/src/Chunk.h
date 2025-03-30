@@ -5,8 +5,8 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE_WIDTH 5
-#define CHUNK_SIZE_HEIGHT 10
+#define CHUNK_SIZE_WIDTH 32
+#define CHUNK_SIZE_HEIGHT 256
 
 namespace RealEngine {
 	class Chunk {

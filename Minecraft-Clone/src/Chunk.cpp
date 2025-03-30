@@ -27,7 +27,7 @@ namespace RealEngine {
 					if (y == 0) {
 						m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] = Bedrock;
 					}
-					else if (z % 2 == 0) {
+					else if (y % 2 == 0) {
                         m_Blocks[z + x * CHUNK_SIZE_WIDTH + y * CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH] = Dirt;
 					}
                     else {

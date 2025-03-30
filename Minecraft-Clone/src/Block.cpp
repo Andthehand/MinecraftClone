@@ -10,6 +10,7 @@ namespace RealEngine {
 	std::vector<Block> BlockHelper::s_BlockMap;
 	std::unordered_map<StringHash, BlockType> BlockHelper::s_BlockLookup;
 	Ref<Texture2DArray> BlockHelper::s_BlockTextureArray;
+	Ref<ShaderStorageBuffer> BlockHelper::s_SideIDArray;
 
 	struct YAMLBlockTexture {
 		// These could be paths but it's easier to use strings
@@ -116,12 +117,14 @@ namespace RealEngine {
 		}
 
 		std::vector<std::filesystem::path> texturePaths;
+		std::vector<BlockTexture> blockTexturesIds;
 		{
 			RE_PROFILE_SCOPE("Process Block Data");
 
 			// Populate the BlockMap and BlockLookup
 			s_BlockMap.reserve(blocks.size());
 			s_BlockLookup.reserve(blocks.size());
+			blockTexturesIds.reserve(blocks.size());
 
 			uint32_t currrentTextureID = 0;
 			std::string assetPath = "assets/blocks/";
@@ -161,6 +164,7 @@ namespace RealEngine {
 
 				s_BlockMap.push_back(block);
 				s_BlockLookup[StringHash(block.InternalName)] = block.Id;
+				blockTexturesIds.push_back(block.Texture);
 
 				RE_INFO("Loaded block: {} with ID: {} and {} textures", block.InternalName, block.Id, yamlBlock.Texture.NumTextures);
 			}
@@ -169,5 +173,6 @@ namespace RealEngine {
 		// Load the textures
 		RE_INFO("Loading block textures...");
 		s_BlockTextureArray = Texture2DArray::Create(texturePaths, 5); // 16x16 textures down to 1x1 mipmap
+		s_SideIDArray = ShaderStorageBuffer::Create(blockTexturesIds.data(), (uint32_t)(blockTexturesIds.size() * sizeof(BlockTexture)), 3);
 	}
 }
