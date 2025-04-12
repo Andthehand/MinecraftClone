@@ -5,28 +5,41 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE_WIDTH 32
-#define CHUNK_SIZE_HEIGHT 256
+#define CHUNK_SIZE_WIDTH 62
+
+static constexpr int CS = CHUNK_SIZE_WIDTH;
+
+static constexpr int CS_P = CHUNK_SIZE_WIDTH + 2;
+static constexpr int CS_2 = CS * CS;
+static constexpr int CS_P2 = CS_P * CS_P;
+static constexpr int CS_P3 = CS_P * CS_P * CS_P;
 
 namespace RealEngine {
+	struct MeshData {
+		uint64_t* faceMasks = nullptr; // CS_2 * 6
+		uint64_t* opaqueMask = nullptr; //CS_P2
+		uint8_t* forwardMerged = nullptr; // CS_2
+		uint8_t* rightMerged = nullptr; // CS
+		std::vector<uint64_t>* vertices = nullptr;
+		int vertexCount = 0;
+		int maxVertices = 0;
+		int faceVertexBegin[6] = { 0 };
+		int faceVertexLength[6] = { 0 };
+	};
+
 	class Chunk {
 	public:
-		Chunk(const glm::vec3& chunkOffset);
+		Chunk(const glm::ivec3& chunkOffset);
 		~Chunk() = default;
 
-		void GenerateMesh();
+		MeshData Generate();
 
-		void Render(Shader* chunkShader);
+		void GenerateMesh(MeshData& meshData);
+
+		glm::ivec3& GetChunkOffset() { return m_ChunkOffset; }
 	private:
-		BlockType m_Blocks[CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT];
+		BlockType m_Blocks[CS_P * CS_P * CS_P];
 
-		glm::vec3 m_ChunkOffset;
-
-		//Render Data
-		Ref<VertexArray> m_VAO;
-		Ref<ShaderStorageBuffer> m_SSBO;
-
-		// Used for sending IDs to the GPU for rendering
-		Ref<Texture2DArray> m_BlockArray;
+		glm::ivec3 m_ChunkOffset;
 	};
 }

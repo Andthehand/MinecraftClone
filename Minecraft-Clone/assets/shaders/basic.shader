@@ -1,89 +1,108 @@
 #type vertex
-#version 450
+#version 460 core
 
-struct FaceData {
-	vec3 Position;
-    uint Facing;
+struct QuadData {
+  uint quadData1;
+  uint quadData2;
 };
 
-layout(std430, binding = 2) buffer uFaces {
-	FaceData Faces[];
+layout(binding = 1, std430) readonly buffer ssbo1 {
+  QuadData data[];  
 };
 
-struct TextureIds {
-	uint Bottom;
-    uint Side;
-    uint Top;
-};
-
-layout(std430, binding = 3) buffer uSideIDs {
-	TextureIds SideIds[];
-};
-
-uniform Camera {
+layout(binding = 0) uniform Camera {
 	mat4 u_ViewProjection;
+    vec3 eye_position;
 };
 
-layout(binding = 1) uniform usampler2DArray uBlockIDs;
+out VS_OUT {
+  out vec3 pos;
+  flat vec3 normal;
+  flat vec3 color;
+} vs_out;
 
-// Offsets for our vertices drawing this face
-const vec3 facePositions[6][4] = vec3[6][4] (
-	vec3[4](vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 1.0), vec3(1.0, 1.0, 1.0), vec3(0.0, 1.0, 1.0)),	// FRONT
-	vec3[4](vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0)),	// BACK
-	vec3[4](vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), vec3(0.0, 1.0, 0.0)),	// LEFT
-	vec3[4](vec3(1.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 1.0)),	// RIGHT
-	vec3[4](vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 1.0)),	// TOP
-	vec3[4](vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 1.0), vec3(0.0, 0.0, 1.0))		// BOTTOM
-);
+const vec3 normalLookup[6] = {
+  vec3( 0, 1, 0 ),
+  vec3(0, -1, 0 ),
+  vec3( 1, 0, 0 ),
+  vec3( -1, 0, 0 ),
+  vec3( 0, 0, 1 ),
+  vec3( 0, 0, -1 )
+};
 
-// Winding order to access the face positions
-const int indices[6] = {0, 1, 2, 2, 3, 0};
+const vec3 colorLookup[8] = {
+  vec3(0.2, 0.659, 0.839),
+  vec3(0.302, 0.302, 0.302),
+  vec3(0.278, 0.600, 0.141),
+  vec3(0.1, 0.1, 0.6),
+  vec3(0.1, 0.6, 0.6),
+  vec3(0.6, 0.1, 0.6),
+  vec3(0.6, 0.6, 0.1),
+  vec3(0.6, 0.1, 0.1)
+};
 
-const vec2 coords[4] = vec2[](
-	vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(1.0f, 1.0f), vec2(0.0f, 1.0f)
-);
-
-out vec3 TexCoord;
+const int flipLookup[6] = int[6](1, -1, -1, 1, -1, 1);
 
 void main() {
-	const int index = gl_VertexID / 6;
-	const int currVertexID = gl_VertexID % 6;
-	FaceData currentFace = Faces[index];
+  ivec3 chunkOffsetPos = ivec3(gl_BaseInstance&255u, gl_BaseInstance>>8&255u, gl_BaseInstance>>16&255u) * 62;
+  uint face = gl_BaseInstance>>24;
 
-	TextureIds currentTexture = SideIds[texture(uBlockIDs, currentFace.Position.xzy).x];
+  int vertexID = int(gl_VertexID&3u);
+  uint ssboIndex = gl_VertexID >> 2u;
 
-	float textureID;
-	switch(currentFace.Facing) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			textureID = round(currentTexture.Side);
-			break;
-		case 4:
-			textureID = round(currentTexture.Top);
-			break;
-		case 5:
-			textureID = round(currentTexture.Bottom);
-			break;
-	}
+  uint quadData1 = data[ssboIndex].quadData1;
+  uint quadData2 = data[ssboIndex].quadData2;
 
-	// Offset the face off of origin based on direction of the face
-	vec3 vertexPosition = currentFace.Position + facePositions[currentFace.Facing][indices[currVertexID]];
+  ivec3 iVertexPos = ivec3(quadData1, quadData1 >> 6u, quadData1 >> 12u) & 63;
+  iVertexPos += chunkOffsetPos;
 
-	TexCoord = vec3(coords[indices[currVertexID]], textureID);
-	gl_Position = u_ViewProjection * vec4(vertexPosition, 1.0f);
+  int w = int((quadData1 >> 18u)&63u), h = int((quadData1 >> 24u)&63u);
+  uint wDir = (face & 2) >> 1, hDir = 2 - (face >> 2);
+  int wMod = vertexID >> 1, hMod = vertexID & 1;
+
+  iVertexPos[wDir] += (w * wMod * flipLookup[face]);
+  iVertexPos[hDir] += (h * hMod);
+
+  vs_out.pos = iVertexPos;
+  vs_out.normal = normalLookup[face];
+  vs_out.color = colorLookup[(quadData2&255u) - 1];
+
+  vec3 vertexPos = iVertexPos;
+  vertexPos[wDir] += 0.0007 * flipLookup[face] * (wMod * 2 - 1);
+  vertexPos[hDir] += 0.0007 * (hMod * 2 - 1);
+
+  gl_Position = u_ViewProjection * vec4(vertexPos, 1);
 }
 
 #type fragment
-#version 450
-layout(binding = 0) uniform sampler2DArray ourTexture;
+#version 460 core
 
-in vec3 TexCoord;
+layout(location=0) out vec3 out_color;
 
-out vec4 FragColor;
+in VS_OUT {
+  vec3 pos;
+  flat vec3 normal;
+  flat vec3 color;
+} fs_in;
+
+layout(binding = 0) uniform Camera {
+	mat4 u_ViewProjection;
+    vec3 eye_position;
+};
+
+const vec3 diffuse_color = vec3(0.15, 0.15, 0.15);
+const vec3 rim_color = vec3(0.04, 0.04, 0.04);
+const vec3 sun_position = vec3(250.0, 1000.0, 750.0) * 10000;
 
 void main() {
-   FragColor = texture(ourTexture, TexCoord);
-   // FragColor = vec4(test, 0.0f, 0.1f, 1.0f);
+  vec3 L = normalize(sun_position - fs_in.pos);
+  vec3 V = normalize(eye_position - fs_in.pos);
+
+  float rim = 1 - max(dot(V, fs_in.normal), 0.0);
+  rim = smoothstep(0.6, 1.0, rim);
+
+  out_color = 
+    fs_in.color +
+    (diffuse_color * max(0, dot(L, fs_in.normal))) +
+    (rim_color * vec3(rim, rim, rim));
 }

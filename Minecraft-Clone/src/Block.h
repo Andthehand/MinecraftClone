@@ -4,7 +4,7 @@
 #include <RealEngine.h>
 
 namespace RealEngine {
-	typedef uint32_t BlockType;
+	typedef uint8_t BlockType;
 
 	enum BasicBlockTypes : BlockType {
 		Air = 0,
