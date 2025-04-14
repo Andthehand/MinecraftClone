@@ -13,7 +13,7 @@ namespace RealEngine {
 	};
 
 	struct ChunkData {
-		Scope<Chunk> Chunk;
+		Scope<Chunk> ChunkObj;
 		ChunkRenderData ChunkRenderData;
 	};
 
