@@ -13,8 +13,8 @@ namespace RealEngine {
 	};
 
 	struct ChunkData {
-		Scope<Chunk> ChunkObj;
-		ChunkRenderData ChunkRenderData;
+		Scope<Chunk> Object;
+		ChunkRenderData RenderData;
 	};
 
 	class ChunkManager {

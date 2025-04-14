@@ -70,9 +70,9 @@ namespace RealEngine {
 
 	void ChunkManager::Render() {
 		for (const auto& chunk : m_Chunks) {
-			for (int i = 0; i < chunk.ChunkRenderData.faceDrawCommands.size(); i++) {
-				if (chunk.ChunkRenderData.faceDrawCommands[i]) {
-					m_ChunkRenderer.addDrawCommand(*chunk.ChunkRenderData.faceDrawCommands[i]);
+			for (int i = 0; i < chunk.RenderData.faceDrawCommands.size(); i++) {
+				if (chunk.RenderData.faceDrawCommands[i]) {
+					m_ChunkRenderer.addDrawCommand(*chunk.RenderData.faceDrawCommands[i]);
 				}
 			}
 		}
