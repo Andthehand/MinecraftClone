@@ -33,8 +33,7 @@ namespace RealEngine {
 		m_Camera.OnUpdate(deltaTime);
 		glm::mat4 viewProjection = m_Camera.GetViewProjection();
 		glm::vec3 cameraPosition = m_Camera.GetPosition();
-		glm::ivec3 intCamPosition = glm::ivec3(floor(m_Camera.GetPosition()));
-		CameraData cameraData = { viewProjection, cameraPosition, intCamPosition };
+		CameraData cameraData = { viewProjection, cameraPosition };
 		m_CameraUniformBuffer->SetData(&cameraData, sizeof(CameraData));
 
 		// Render Chunks
@@ -58,8 +57,10 @@ namespace RealEngine {
 
 		ImGui::Begin("Minecraft Settings");
 		
-		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", m_Camera.GetPosition().x, m_Camera.GetPosition().y, m_Camera.GetPosition().z);
-		ImGui::Text("Camera Rotation: (%.2f, %.2f)", m_Camera.GetYaw(), m_Camera.GetPitch());
+		glm::vec3 cameraPosition = m_Camera.GetPosition();
+		glm::ivec3 intCamPosition = glm::ivec3(floor(m_Camera.GetPosition()));
+		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+		ImGui::Text("Int Camera Position: (%d, %d, %d)", intCamPosition.x, intCamPosition.y, intCamPosition.z);
 
 		ImGui::End();
 	}

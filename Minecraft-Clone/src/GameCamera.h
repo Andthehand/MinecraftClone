@@ -34,6 +34,9 @@ namespace RealEngine {
 			if (Input::IsKeyPressed(Key::D)) {
 				position += right * deltaTime * Speed;
 			}
+			if (Input::IsKeyPressed(Key::Space)) {
+				position.y += deltaTime * Speed;
+			}
 		}
 
         void OnEvent(Event& e) {
@@ -59,8 +62,9 @@ namespace RealEngine {
 		}
 
         glm::mat4 GetViewMatrix() {
-            glm::vec3 intraVoxelPos = position - floor(position);
-            return glm::lookAt(intraVoxelPos, intraVoxelPos + front, up);
+            //glm::vec3 intraVoxelPos = position - floor(position);
+			//RE_WARN("IntraVoxelPos: {}", intraVoxelPos);
+            return glm::lookAt(position, position + front, up);
         }
 
 		glm::mat4 GetViewProjection() {

@@ -13,7 +13,6 @@ layout(binding = 1, std430) readonly buffer ssbo1 {
 layout(binding = 0) uniform Camera {
 	mat4 u_ViewProjection;
     vec3 eye_position;
-    ivec3 eye_position_int;
 };
 
 out VS_OUT {
@@ -89,7 +88,6 @@ in VS_OUT {
 layout(binding = 0) uniform Camera {
 	mat4 u_ViewProjection;
     vec3 eye_position;
-    ivec3 eye_position_int;
 };
 
 const vec3 diffuse_color = vec3(0.15, 0.15, 0.15);

@@ -10,7 +10,6 @@ namespace RealEngine {
 	struct CameraData {
 		glm::mat4 ViewProjection;
 		glm::vec3 CameraPosition;
-		glm::ivec3 IntCameraPosition;
 	};
 
 	class MinecraftLayer : public Layer {
