@@ -5,11 +5,9 @@
 
 #include "Block.h"
 
-#define CHUNK_SIZE_WIDTH 62
+static constexpr int CS = 62;
 
-static constexpr int CS = CHUNK_SIZE_WIDTH;
-
-static constexpr int CS_P = CHUNK_SIZE_WIDTH + 2;
+static constexpr int CS_P = CS + 2;
 static constexpr int CS_2 = CS * CS;
 static constexpr int CS_P2 = CS_P * CS_P;
 static constexpr int CS_P3 = CS_P * CS_P * CS_P;
@@ -29,16 +27,20 @@ namespace RealEngine {
 
 	class Chunk {
 	public:
+		Chunk() = delete;
 		Chunk(const glm::ivec3& chunkOffset);
-		~Chunk() = default;
+		~Chunk();
 
-		MeshData Generate();
+		Chunk(const Chunk&) = delete;
+		Chunk& operator= (const Chunk&) = delete;
 
-		void GenerateMesh(MeshData& meshData);
+		MeshData& Reuse();
+		void GenerateMesh();
 
 		glm::ivec3& GetChunkOffset() { return m_ChunkOffset; }
 	private:
 		BlockType m_Blocks[CS_P * CS_P * CS_P];
+		MeshData m_MeshData;
 
 		glm::ivec3 m_ChunkOffset;
 	};

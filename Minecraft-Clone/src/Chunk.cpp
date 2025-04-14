@@ -18,7 +18,22 @@ namespace RealEngine {
     }
 
 	Chunk::Chunk(const glm::ivec3& chunkOffset) 
-        : m_ChunkOffset(chunkOffset) { }
+        : m_ChunkOffset(chunkOffset) {
+        m_MeshData.opaqueMask = new uint64_t[CS_P2]{ 0 };
+        m_MeshData.faceMasks = new uint64_t[CS_2 * 6]{ 0 };
+        m_MeshData.forwardMerged = new uint8_t[CS_2]{ 0 };
+        m_MeshData.rightMerged = new uint8_t[CS]{ 0 };
+        m_MeshData.vertices = new std::vector<uint64_t>(10000);
+        m_MeshData.maxVertices = 10000;
+    }
+
+    Chunk::~Chunk() {
+		delete[] m_MeshData.opaqueMask;
+		delete[] m_MeshData.faceMasks;
+		delete[] m_MeshData.forwardMerged;
+		delete[] m_MeshData.rightMerged;
+		delete m_MeshData.vertices;
+    }
 
     constexpr uint64_t P_MASK = ~(1ull << 63 | 1);
 
@@ -43,16 +58,8 @@ namespace RealEngine {
         return (type << 32) | (h << 24) | (w << 18) | (z << 12) | (y << 6) | x;
     }
 					
-    MeshData Chunk::Generate() {
+    MeshData& Chunk::Reuse() {
         RE_PROFILE_FUNCTION();
-
-        MeshData meshData;
-        meshData.opaqueMask = new uint64_t[CS_P2]{ 0 };
-        meshData.faceMasks = new uint64_t[CS_2 * 6]{ 0 };
-        meshData.forwardMerged = new uint8_t[CS_2]{ 0 };
-        meshData.rightMerged = new uint8_t[CS]{ 0 };
-        meshData.vertices = new std::vector<uint64_t>(10000);
-        meshData.maxVertices = 10000;
 
         //for (uint16_t y = 0; y < CS; y++) {
         //    for (uint8_t x = 0; x < CS; x++) {
@@ -78,34 +85,34 @@ namespace RealEngine {
                 for (int z = 1; z < CS_P; z++) {
                     if (x % 2 == 0 && y % 2 == 0 && z % 2 == 0) {
                         m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 1;
-                        meshData.opaqueMask[(y * CS_P) + x] |= 1ull << z;
+                        m_MeshData.opaqueMask[(y * CS_P) + x] |= 1ull << z;
 
                         m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 2;
-                        meshData.opaqueMask[((y - 1) * CS_P) + (x - 1)] |= 1ull << z;
+                        m_MeshData.opaqueMask[((y - 1) * CS_P) + (x - 1)] |= 1ull << z;
 
                         m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 3;
-                        meshData.opaqueMask[(y * CS_P) + (x - 1)] |= 1ull << (z - 1);
+                        m_MeshData.opaqueMask[(y * CS_P) + (x - 1)] |= 1ull << (z - 1);
 
                         m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 4;
-                        meshData.opaqueMask[((y - 1) * CS_P) + x] |= 1ull << (z - 1);
+                        m_MeshData.opaqueMask[((y - 1) * CS_P) + x] |= 1ull << (z - 1);
                     }
                 }
             }
         }
 
-        GenerateMesh(meshData);
-		return meshData;
+        GenerateMesh();
+		return m_MeshData;
     }
 
-    void Chunk::GenerateMesh(MeshData& meshData) {
+    void Chunk::GenerateMesh() {
         RE_PROFILE_FUNCTION();
         
-        meshData.vertexCount = 0;
+        m_MeshData.vertexCount = 0;
         int vertexI = 0;
 
-        uint64_t* opaqueMask = meshData.opaqueMask;
-        uint64_t* faceMasks = meshData.faceMasks;
-        uint8_t* forwardMerged = meshData.forwardMerged;
+        uint64_t* opaqueMask = m_MeshData.opaqueMask;
+        uint64_t* faceMasks = m_MeshData.faceMasks;
+        uint8_t* forwardMerged = m_MeshData.forwardMerged;
 
         // Hidden face culling
         for (int a = 1; a < CS_P - 1; a++) {
@@ -192,17 +199,17 @@ namespace RealEngine {
 							    break;
                         }
 
-                        insertQuad(*meshData.vertices, quad, vertexI, meshData.maxVertices);
+                        insertQuad(*m_MeshData.vertices, quad, vertexI, m_MeshData.maxVertices);
                     }
                 }
             }
 
             const int faceVertexLength = vertexI - faceVertexBegin;
-            meshData.faceVertexBegin[face] = faceVertexBegin;
-            meshData.faceVertexLength[face] = faceVertexLength;
+            m_MeshData.faceVertexBegin[face] = faceVertexBegin;
+            m_MeshData.faceVertexLength[face] = faceVertexLength;
         }
 
-        uint8_t* rightMerged = meshData.rightMerged;
+        uint8_t* rightMerged = m_MeshData.rightMerged;
 
         // Greedy meshing faces 4-5
         for (uint8_t face = 4; face < 6; face++) {
@@ -259,16 +266,16 @@ namespace RealEngine {
 
                         const uint64_t quad = getQuad(meshLeft + (face == 4 ? meshWidth : 0), meshFront, meshUp, meshWidth, meshLength, type);
 
-                        insertQuad(*meshData.vertices, quad, vertexI, meshData.maxVertices);
+                        insertQuad(*m_MeshData.vertices, quad, vertexI, m_MeshData.maxVertices);
                     }
                 }
             }
 
             const int faceVertexLength = vertexI - faceVertexBegin;
-            meshData.faceVertexBegin[face] = faceVertexBegin;
-            meshData.faceVertexLength[face] = faceVertexLength;
+            m_MeshData.faceVertexBegin[face] = faceVertexBegin;
+            m_MeshData.faceVertexLength[face] = faceVertexLength;
         }
 
-        meshData.vertexCount = vertexI + 1;
+        m_MeshData.vertexCount = vertexI + 1;
     }
 }

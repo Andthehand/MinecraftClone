@@ -13,6 +13,7 @@ layout(binding = 1, std430) readonly buffer ssbo1 {
 layout(binding = 0) uniform Camera {
 	mat4 u_ViewProjection;
     vec3 eye_position;
+    ivec3 eye_position_int;
 };
 
 out VS_OUT {
@@ -67,7 +68,7 @@ void main() {
   vs_out.normal = normalLookup[face];
   vs_out.color = colorLookup[(quadData2&255u) - 1];
 
-  vec3 vertexPos = iVertexPos;
+  vec3 vertexPos = iVertexPos - eye_position_int;
   vertexPos[wDir] += 0.0007 * flipLookup[face] * (wMod * 2 - 1);
   vertexPos[hDir] += 0.0007 * (hMod * 2 - 1);
 
@@ -88,6 +89,7 @@ in VS_OUT {
 layout(binding = 0) uniform Camera {
 	mat4 u_ViewProjection;
     vec3 eye_position;
+    ivec3 eye_position_int;
 };
 
 const vec3 diffuse_color = vec3(0.15, 0.15, 0.15);

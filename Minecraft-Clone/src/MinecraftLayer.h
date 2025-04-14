@@ -3,15 +3,14 @@
 
 #include "Chunk.h"
 #include "ChunkRenderer.h"
+#include "ChunkManager.h"
+#include "GameCamera.h"
 
 namespace RealEngine {
 	struct CameraData {
 		glm::mat4 ViewProjection;
 		glm::vec3 CameraPosition;
-	};
-
-	struct ChunkRenderData {
-		std::array<DrawElementsIndirectCommand*, 6> faceDrawCommands = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		glm::ivec3 IntCameraPosition;
 	};
 
 	class MinecraftLayer : public Layer {
@@ -23,14 +22,9 @@ namespace RealEngine {
 		virtual void OnImGui() override;
 		virtual void OnEvent(Event& e) override;
 	private:
-		Ref<Shader> m_Shader;
-
-		Scope<Chunk> m_Chunk;
-		ChunkRenderer m_ChunkRenderer;
-		ChunkRenderData m_ChunkRenderData;
-
-		EditorCamera m_Camera;
+		GameCamera m_Camera;
 		Ref<UniformBuffer> m_CameraUniformBuffer;
 
+		Scope<ChunkManager> m_ChunkManager;
 	};
 }

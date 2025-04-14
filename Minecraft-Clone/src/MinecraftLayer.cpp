@@ -7,38 +7,22 @@
 
 namespace RealEngine {
 	MinecraftLayer::MinecraftLayer()
-		: Layer("MinecraftLayer") {
-	}
+		: Layer("MinecraftLayer") { }
 
 	void MinecraftLayer::OnAttach() {
 		RE_PROFILE_FUNCTION();
-		m_Shader = Shader::Create("assets/shaders/basic.shader");
 
 		glm::vec3 color = { 0.0f, 0.0f, 1.0f };
 		m_CameraUniformBuffer = UniformBuffer::Create(&color, sizeof(CameraData), 0);
 
-		m_Camera = EditorCamera(90.0f, 1.778f, 0.1f, 1000.0f);
-
-		m_ChunkRenderer.init();
-		m_Chunk = CreateScope<Chunk>(glm::vec3(0.0f, 0.0f, 0.0f));
-		MeshData meshData = m_Chunk->Generate();
-
-		glm::ivec3 chunkPos = m_Chunk->GetChunkOffset();
-		std::array<DrawElementsIndirectCommand*, 6> commands = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-		for (uint32_t i = 0; i < commands.size(); i++) {
-			if (meshData.faceVertexLength[i]) {
-				uint32_t baseInstance = (i << 24) | (chunkPos.z << 16) | (chunkPos.y << 8) | chunkPos.x;
-
-				auto drawCommand = m_ChunkRenderer.getDrawCommand(meshData.faceVertexLength[i], baseInstance);
-
-				commands[i] = drawCommand;
-
-				m_ChunkRenderer.buffer(*drawCommand, meshData.vertices->data() + meshData.faceVertexBegin[i]);
-			}
-		}
-		m_ChunkRenderData = ChunkRenderData({ commands });
+		m_Camera = GameCamera(glm::vec3(0));
+		Window& window = Application::Get().GetWindow();
+		m_Camera.HandleResolution(window.GetWidth(), window.GetHeight());
 
 		RenderCommands::SetFaceCulling(true);
+		window.HideCursor(true);
+
+		m_ChunkManager = CreateScope<ChunkManager>();
 	}
 
 	void MinecraftLayer::OnUpdate(float deltaTime) {
@@ -49,16 +33,13 @@ namespace RealEngine {
 		m_Camera.OnUpdate(deltaTime);
 		glm::mat4 viewProjection = m_Camera.GetViewProjection();
 		glm::vec3 cameraPosition = m_Camera.GetPosition();
-		CameraData cameraData = { viewProjection, cameraPosition };
+		glm::ivec3 intCamPosition = glm::ivec3(floor(m_Camera.GetPosition()));
+		CameraData cameraData = { viewProjection, cameraPosition, intCamPosition };
 		m_CameraUniformBuffer->SetData(&cameraData, sizeof(CameraData));
 
 		// Render Chunks
-		for (int i = 0; i < m_ChunkRenderData.faceDrawCommands.size(); i++) {
-			if (m_ChunkRenderData.faceDrawCommands[i]) {
-				m_ChunkRenderer.addDrawCommand(*m_ChunkRenderData.faceDrawCommands[i]);
-			}
-		}
-		m_ChunkRenderer.render(m_Shader);
+		m_ChunkManager->Update();
+		m_ChunkManager->Render();
 	}
 
 	void MinecraftLayer::OnImGui() {
@@ -74,6 +55,13 @@ namespace RealEngine {
 			}
 			ImGui::EndMainMenuBar();
 		}
+
+		ImGui::Begin("Minecraft Settings");
+		
+		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", m_Camera.GetPosition().x, m_Camera.GetPosition().y, m_Camera.GetPosition().z);
+		ImGui::Text("Camera Rotation: (%.2f, %.2f)", m_Camera.GetYaw(), m_Camera.GetPitch());
+
+		ImGui::End();
 	}
 
 	void MinecraftLayer::OnEvent(Event& e) {
