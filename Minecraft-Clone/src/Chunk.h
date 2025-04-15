@@ -37,6 +37,10 @@ namespace RealEngine {
 		MeshData& Reuse();
 		void GenerateMesh();
 
+		// Used for frustum culling
+		glm::vec3 GetMin() { return glm::vec3(m_ChunkOffset.x * CS, m_ChunkOffset.y * CS, m_ChunkOffset.z * CS); }
+		glm::vec3 GetMax() { return glm::vec3(m_ChunkOffset.x * CS + CS, m_ChunkOffset.y * CS + CS, m_ChunkOffset.z * CS + CS); }
+
 		glm::ivec3& GetChunkOffset() { return m_ChunkOffset; }
 	private:
 		BlockType m_Blocks[CS_P * CS_P * CS_P];

@@ -19,10 +19,10 @@ namespace RealEngine {
 	};
 
 	struct RenderStats {
-		uint32_t drawCalls = 0;
-		uint32_t quads = 0;
+		uint32_t DrawCalls = 0;
+		uint32_t Quads = 0;
 
-		uint32_t chunks = 0;
+		uint32_t Chunks = 0;
 	};
 
 	class ChunkManager {

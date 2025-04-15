@@ -67,9 +67,9 @@ namespace RealEngine {
 		// Render Stats
 		const RenderStats& renderStats = m_ChunkManager->GetRenderStats();
 		ImGui::Text("Render Stats:");
-		ImGui::Text("Draw Calls: %d", renderStats.drawCalls);
-		ImGui::Text("Quads: %d", renderStats.quads);
-		ImGui::Text("Chunks: %d", renderStats.chunks);
+		ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+		ImGui::Text("Quads: %d", renderStats.Quads);
+		ImGui::Text("Chunks: %d", renderStats.Chunks);
 
 		ImGui::End();
 	}
