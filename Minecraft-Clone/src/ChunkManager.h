@@ -18,6 +18,13 @@ namespace RealEngine {
 		ChunkRenderData RenderData;
 	};
 
+	struct RenderStats {
+		uint32_t drawCalls = 0;
+		uint32_t quads = 0;
+
+		uint32_t chunks = 0;
+	};
+
 	class ChunkManager {
 	public:
 		ChunkManager(Ref<GameCamera> camera);
@@ -25,6 +32,8 @@ namespace RealEngine {
 
 		void Update();
 		void Render();
+
+		const RenderStats& GetRenderStats() const { return m_RenderStats; }
 	private:
 		Ref<GameCamera> m_Camera;
 		Ref<Shader> m_Shader;
@@ -32,5 +41,6 @@ namespace RealEngine {
 		std::vector<ChunkData> m_Chunks;
 
 		ChunkRenderer m_ChunkRenderer;
+		RenderStats m_RenderStats;
 	};
 }

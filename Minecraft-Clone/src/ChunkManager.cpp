@@ -64,6 +64,8 @@ namespace RealEngine {
 				m_Chunks.push_back({ std::move(chunk), renderData });
 			}
 		}
+
+		m_RenderStats.chunks = (uint32_t)m_Chunks.size();
 	}
 
 	void ChunkManager::Update() {
@@ -71,10 +73,16 @@ namespace RealEngine {
 	}
 
 	void ChunkManager::Render() {
+		RE_PROFILE_FUNCTION();
+		m_RenderStats.drawCalls = 0;
+		m_RenderStats.quads = 0;
+
 		for (const auto& chunk : m_Chunks) {
 			for (int i = 0; i < chunk.RenderData.faceDrawCommands.size(); i++) {
 				if (chunk.RenderData.faceDrawCommands[i]) {
 					m_ChunkRenderer.addDrawCommand(*chunk.RenderData.faceDrawCommands[i]);
+					m_RenderStats.drawCalls++;
+					m_RenderStats.quads += chunk.RenderData.faceDrawCommands[i]->indexCount / 6;
 				}
 			}
 		}

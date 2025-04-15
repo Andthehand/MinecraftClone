@@ -64,6 +64,13 @@ namespace RealEngine {
 
 		ImGui::SliderFloat("Camera Speed", &m_Camera->GetSpeedRef(), 0.0f, 100.0f);
 
+		// Render Stats
+		const RenderStats& renderStats = m_ChunkManager->GetRenderStats();
+		ImGui::Text("Render Stats:");
+		ImGui::Text("Draw Calls: %d", renderStats.drawCalls);
+		ImGui::Text("Quads: %d", renderStats.quads);
+		ImGui::Text("Chunks: %d", renderStats.chunks);
+
 		ImGui::End();
 	}
 
