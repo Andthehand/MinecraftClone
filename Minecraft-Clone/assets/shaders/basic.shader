@@ -17,8 +17,8 @@ layout(binding = 0) uniform Camera {
 
 out VS_OUT {
   out vec3 pos;
+  out vec3 texCoord;
   flat vec3 normal;
-  flat vec3 color;
 } vs_out;
 
 const vec3 normalLookup[6] = {
@@ -30,15 +30,11 @@ const vec3 normalLookup[6] = {
   vec3( 0, 0, -1 )
 };
 
-const vec3 colorLookup[8] = {
-  vec3(0.2, 0.659, 0.839),
-  vec3(0.302, 0.302, 0.302),
-  vec3(0.278, 0.600, 0.141),
-  vec3(0.1, 0.1, 0.6),
-  vec3(0.1, 0.6, 0.6),
-  vec3(0.6, 0.1, 0.6),
-  vec3(0.6, 0.6, 0.1),
-  vec3(0.6, 0.1, 0.1)
+const vec2 textureCords[4] = {
+  vec2(1, 1),
+  vec2(0, 1),
+  vec2(1, 0),
+  vec2(0, 0)
 };
 
 const int flipLookup[6] = int[6](1, -1, -1, 1, -1, 1);
@@ -65,7 +61,9 @@ void main() {
 
   vs_out.pos = iVertexPos;
   vs_out.normal = normalLookup[face];
-  vs_out.color = colorLookup[(quadData2&255u) - 1];
+
+  vec2 texCords = textureCords[gl_VertexID % 4];
+  vs_out.texCoord = vec3(texCords.x * h, texCords.y * w, 0);
 
   vec3 vertexPos = iVertexPos;
   vertexPos[wDir] += 0.0007 * flipLookup[face] * (wMod * 2 - 1);
@@ -81,8 +79,8 @@ layout(location=0) out vec3 out_color;
 
 in VS_OUT {
   vec3 pos;
+  vec3 texCoord;
   flat vec3 normal;
-  flat vec3 color;
 } fs_in;
 
 layout(binding = 0) uniform Camera {
@@ -94,6 +92,8 @@ const vec3 diffuse_color = vec3(0.15, 0.15, 0.15);
 const vec3 rim_color = vec3(0.04, 0.04, 0.04);
 const vec3 sun_position = vec3(250.0, 1000.0, 750.0) * 10000;
 
+layout(binding = 2) uniform sampler2DArray ourTexture;
+
 void main() {
   vec3 L = normalize(sun_position - fs_in.pos);
   vec3 V = normalize(eye_position - fs_in.pos);
@@ -102,7 +102,7 @@ void main() {
   rim = smoothstep(0.6, 1.0, rim);
 
   out_color = 
-    fs_in.color +
+    texture(ourTexture, fs_in.texCoord).rgb +
     (diffuse_color * max(0, dot(L, fs_in.normal))) +
     (rim_color * vec3(rim, rim, rim));
 }

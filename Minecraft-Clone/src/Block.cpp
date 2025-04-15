@@ -173,6 +173,7 @@ namespace RealEngine {
 		// Load the textures
 		RE_INFO("Loading block textures...");
 		s_BlockTextureArray = Texture2DArray::Create(texturePaths, 5); // 16x16 textures down to 1x1 mipmap
+		s_BlockTextureArray->Bind(2);
 		s_SideIDArray = ShaderStorageBuffer::Create(blockTexturesIds.data(), (uint32_t)(blockTexturesIds.size() * sizeof(BlockTexture)), 3);
 	}
 }

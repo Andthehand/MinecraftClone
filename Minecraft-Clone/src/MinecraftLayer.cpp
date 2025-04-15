@@ -22,6 +22,7 @@ namespace RealEngine {
 		RenderCommands::SetFaceCulling(true);
 		window.HideCursor(true);
 
+		BlockHelper::ReadBlockDataYaml("assets/blocks/blocks.yaml");
 		m_ChunkManager = CreateScope<ChunkManager>(m_Camera);
 	}
 
