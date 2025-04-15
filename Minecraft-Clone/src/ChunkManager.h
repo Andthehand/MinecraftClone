@@ -6,7 +6,7 @@
 
 #include "RealEngine.h"
 
-#define RenderDistance 40
+#define RenderDistance 5
 
 namespace RealEngine {
 	struct ChunkRenderData {
@@ -33,7 +33,7 @@ namespace RealEngine {
 		void Update();
 		void Render();
 
-		const RenderStats& GetRenderStats() const { return m_RenderStats; }
+		const RenderStats* GetRenderStats() const { return &m_RenderStats; }
 	private:
 		Ref<GameCamera> m_Camera;
 		Ref<Shader> m_Shader;

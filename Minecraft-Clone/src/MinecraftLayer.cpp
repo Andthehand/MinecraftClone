@@ -59,17 +59,17 @@ namespace RealEngine {
 		
 		glm::vec3 cameraPosition = m_Camera->GetPosition();
 		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);\
-		const glm::vec3& cameraFront = m_Camera->GetFront();
+		const glm::vec3 cameraFront = m_Camera->GetFront();
 		ImGui::Text("Camera Front: (%.2f, %.2f, %.2f)", cameraFront.x, cameraFront.y, cameraFront.z);
 
-		ImGui::SliderFloat("Camera Speed", &m_Camera->GetSpeedRef(), 0.0f, 100.0f);
+		ImGui::SliderFloat("Camera Speed", m_Camera->GetSpeedRef(), 0.0f, 100.0f);
 
 		// Render Stats
-		const RenderStats& renderStats = m_ChunkManager->GetRenderStats();
+		const RenderStats* renderStats = m_ChunkManager->GetRenderStats();
 		ImGui::Text("Render Stats:");
-		ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-		ImGui::Text("Quads: %d", renderStats.Quads);
-		ImGui::Text("Chunks: %d", renderStats.Chunks);
+		ImGui::Text("Draw Calls: %d", renderStats->DrawCalls);
+		ImGui::Text("Quads: %d", renderStats->Quads);
+		ImGui::Text("Chunks: %d", renderStats->Chunks);
 
 		ImGui::End();
 	}

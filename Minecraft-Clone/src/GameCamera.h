@@ -60,12 +60,12 @@ namespace RealEngine {
             position = pos;
         }
 
-		const glm::vec3& GetPosition() {
+		const glm::vec3 GetPosition() {
 			return position;
 		}
 
-        float& GetSpeedRef() {
-			return Speed;
+        float* GetSpeedRef() {
+			return &Speed;
 		}
 
         glm::mat4 GetViewMatrix() {
@@ -80,7 +80,7 @@ namespace RealEngine {
 
 		float GetYaw() const { return yaw; }
 		float GetPitch() const { return pitch; }
-		const glm::vec3& GetFront() const { return front; }
+		const glm::vec3 GetFront() const { return front; }
 
         bool OnMouseMovement(MouseMovedEvent& e) {
 			static float lastX, lastY;
