@@ -20,8 +20,10 @@ namespace RealEngine {
 		virtual void OnUpdate(float deltaTime) override;
 		virtual void OnImGui() override;
 		virtual void OnEvent(Event& e) override;
+
+		bool OnKeyPressed(KeyPressedEvent& e);
 	private:
-		GameCamera m_Camera;
+		Ref<GameCamera> m_Camera;
 		Ref<UniformBuffer> m_CameraUniformBuffer;
 
 		Scope<ChunkManager> m_ChunkManager;

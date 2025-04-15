@@ -15,14 +15,14 @@ namespace RealEngine {
 		glm::vec3 color = { 0.0f, 0.0f, 1.0f };
 		m_CameraUniformBuffer = UniformBuffer::Create(&color, sizeof(CameraData), 0);
 
-		m_Camera = GameCamera(glm::vec3(0));
+		m_Camera = CreateRef<GameCamera>(glm::vec3(std::pow(2, 9) * CS / 2, CS, std::pow(2, 9) * CS / 2));
 		Window& window = Application::Get().GetWindow();
-		m_Camera.HandleResolution(window.GetWidth(), window.GetHeight());
+		m_Camera->HandleResolution(window.GetWidth(), window.GetHeight());
 
 		RenderCommands::SetFaceCulling(true);
 		window.HideCursor(true);
 
-		m_ChunkManager = CreateScope<ChunkManager>();
+		m_ChunkManager = CreateScope<ChunkManager>(m_Camera);
 	}
 
 	void MinecraftLayer::OnUpdate(float deltaTime) {
@@ -30,9 +30,9 @@ namespace RealEngine {
 		RenderCommands::Clear();
 
 		// Update Camera and UBO
-		m_Camera.OnUpdate(deltaTime);
-		glm::mat4 viewProjection = m_Camera.GetViewProjection();
-		glm::vec3 cameraPosition = m_Camera.GetPosition();
+		m_Camera->OnUpdate(deltaTime);
+		glm::mat4 viewProjection = m_Camera->GetViewProjection();
+		glm::vec3 cameraPosition = m_Camera->GetPosition();
 		CameraData cameraData = { viewProjection, cameraPosition };
 		m_CameraUniformBuffer->SetData(&cameraData, sizeof(CameraData));
 
@@ -57,15 +57,30 @@ namespace RealEngine {
 
 		ImGui::Begin("Minecraft Settings");
 		
-		glm::vec3 cameraPosition = m_Camera.GetPosition();
-		glm::ivec3 intCamPosition = glm::ivec3(floor(m_Camera.GetPosition()));
-		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
-		ImGui::Text("Int Camera Position: (%d, %d, %d)", intCamPosition.x, intCamPosition.y, intCamPosition.z);
+		glm::vec3 cameraPosition = m_Camera->GetPosition();
+		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);\
+		const glm::vec3& cameraFront = m_Camera->GetFront();
+		ImGui::Text("Camera Front: (%.2f, %.2f, %.2f)", cameraFront.x, cameraFront.y, cameraFront.z);
+
+		ImGui::SliderFloat("Camera Speed", &m_Camera->GetSpeedRef(), 0.0f, 100.0f);
 
 		ImGui::End();
 	}
 
 	void MinecraftLayer::OnEvent(Event& e) {
-		m_Camera.OnEvent(e);
+		m_Camera->OnEvent(e);
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(RE_BIND_EVENT_FN(MinecraftLayer::OnKeyPressed));
+	}
+
+	bool MinecraftLayer::OnKeyPressed(KeyPressedEvent& e) {
+		if (e.GetKeyCode() == Key::Tab) {
+			static bool cursorHidden = false;
+			Application::Get().GetWindow().HideCursor(cursorHidden);
+			cursorHidden = !cursorHidden;
+		}
+
+		return false;
 	}
 }

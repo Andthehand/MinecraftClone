@@ -44,8 +44,8 @@ const vec3 colorLookup[8] = {
 const int flipLookup[6] = int[6](1, -1, -1, 1, -1, 1);
 
 void main() {
-  ivec3 chunkOffsetPos = ivec3(gl_BaseInstance&255u, gl_BaseInstance>>8&255u, gl_BaseInstance>>16&255u) * 62;
-  uint face = gl_BaseInstance>>24;
+  ivec3 chunkOffsetPos = ivec3(gl_BaseInstance&511u, gl_BaseInstance>>9&511u, gl_BaseInstance>>18&511u) * 62;
+  uint face = gl_BaseInstance>>28;
 
   int vertexID = int(gl_VertexID&3u);
   uint ssboIndex = gl_VertexID >> 2u;
@@ -67,7 +67,7 @@ void main() {
   vs_out.normal = normalLookup[face];
   vs_out.color = colorLookup[(quadData2&255u) - 1];
 
-  vec3 vertexPos = iVertexPos - eye_position_int;
+  vec3 vertexPos = iVertexPos;
   vertexPos[wDir] += 0.0007 * flipLookup[face] * (wMod * 2 - 1);
   vertexPos[hDir] += 0.0007 * (hMod * 2 - 1);
 

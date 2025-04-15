@@ -2,19 +2,9 @@
 
 namespace RealEngine {
     namespace Utils {
-        enum FacingDirection : uint32_t {
-            FRONT   = 0,
-            BACK    = 1,
-            LEFT    = 2,
-            RIGHT   = 3,
-            TOP     = 4,
-            BOTTOM  = 5
-        };
-
-        PACKED_STRUCT(VertexData) {
-            glm::vec3 Position;
-			FacingDirection Direction;
-        };
+        inline int Vec3ToIndex(int x, int y, int z) {
+            return z + (x * CS_P) + (y * CS_P2);
+        }
     }
 
 	Chunk::Chunk(const glm::ivec3& chunkOffset) 
@@ -61,44 +51,37 @@ namespace RealEngine {
     MeshData& Chunk::Reuse() {
         RE_PROFILE_FUNCTION();
 
-        //for (uint16_t y = 0; y < CS; y++) {
-        //    for (uint8_t x = 0; x < CS; x++) {
-        //        for (uint8_t z = 0; z < CS; z++) {
-        //            if (y == 0) {
-        //                m_Blocks[z + x * CS + y * CS * CS] = Air;
-        //                meshData.opaqueMask[(y * CS) + x] |= 0ull << z;
-        //            }
-        //            else if (y % 2 == 0) {
-        //                m_Blocks[z + x * CS + y * CS * CS] = Dirt;
-        //                meshData.opaqueMask[(y * CS) + x] |= 1ull << z;
-        //            }
-        //            else {
-        //                m_Blocks[z + x * CS + y * CS * CS] = Grass;
-        //                meshData.opaqueMask[(y * CS) + x] |= 1ull << z;
-        //            }
-        //        }
-        //    }
-        //}
-
-        for (int x = 1; x < CS_P; x++) {
-            for (int y = 1; y < CS_P; y++) {
-                for (int z = 1; z < CS_P; z++) {
-                    if (x % 2 == 0 && y % 2 == 0 && z % 2 == 0) {
-                        m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 1;
-                        m_MeshData.opaqueMask[(y * CS_P) + x] |= 1ull << z;
-
-                        m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 2;
-                        m_MeshData.opaqueMask[((y - 1) * CS_P) + (x - 1)] |= 1ull << z;
-
-                        m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 3;
-                        m_MeshData.opaqueMask[(y * CS_P) + (x - 1)] |= 1ull << (z - 1);
-
-                        m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 4;
-                        m_MeshData.opaqueMask[((y - 1) * CS_P) + x] |= 1ull << (z - 1);
+        int r = CS_P / 2;
+        for (int x = -r; x < r; x++) {
+            for (int y = -r; y < r; y++) {
+                for (int z = -r; z < r; z++) {
+                    if (std::sqrt(x * x + y * y + z * z) < 30.0f) {
+                        m_Blocks[Utils::Vec3ToIndex(x + r, y + r, z + r)] = 8;
+                        m_MeshData.opaqueMask[((y + r) * CS_P) + (x + r)] |= 1ull << (z + r);
                     }
                 }
             }
         }
+
+        //for (int x = 1; x < CS_P; x++) {
+        //    for (int y = 1; y < CS_P; y++) {
+        //        for (int z = 1; z < CS_P; z++) {
+        //            if (x % 2 == 0 && y % 2 == 0 && z % 2 == 0) {
+        //                m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 1;
+        //                m_MeshData.opaqueMask[(y * CS_P) + x] |= 1ull << z;
+
+        //                m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 2;
+        //                m_MeshData.opaqueMask[((y - 1) * CS_P) + (x - 1)] |= 1ull << z;
+
+        //                m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 3;
+        //                m_MeshData.opaqueMask[(y * CS_P) + (x - 1)] |= 1ull << (z - 1);
+
+        //                m_Blocks[z + (x * CS_P) + (y * CS_P2)] = 4;
+        //                m_MeshData.opaqueMask[((y - 1) * CS_P) + x] |= 1ull << (z - 1);
+        //            }
+        //        }
+        //    }
+        //}
 
         GenerateMesh();
 		return m_MeshData;

@@ -37,6 +37,9 @@ namespace RealEngine {
 			if (Input::IsKeyPressed(Key::Space)) {
 				position.y += deltaTime * Speed;
 			}
+			if (Input::IsKeyPressed(Key::LeftShift)) {
+				position.y -= deltaTime * Speed;
+			}
 		}
 
         void OnEvent(Event& e) {
@@ -61,6 +64,10 @@ namespace RealEngine {
 			return position;
 		}
 
+        float& GetSpeedRef() {
+			return Speed;
+		}
+
         glm::mat4 GetViewMatrix() {
             //glm::vec3 intraVoxelPos = position - floor(position);
 			//RE_WARN("IntraVoxelPos: {}", intraVoxelPos);
@@ -73,6 +80,7 @@ namespace RealEngine {
 
 		float GetYaw() const { return yaw; }
 		float GetPitch() const { return pitch; }
+		const glm::vec3& GetFront() const { return front; }
 
         bool OnMouseMovement(MouseMovedEvent& e) {
 			static float lastX, lastY;
@@ -118,7 +126,7 @@ namespace RealEngine {
         float yaw = YAW;
         float pitch = PITCH;
         float mouseSensitivity = SENSITIVITY;
-		float Speed = 5.0f; // Movement speed
+		float Speed = 20.0f; // Movement speed
         float fov = FOV;
         float nearD = 1.0f;
         float farD = 10000.0f;

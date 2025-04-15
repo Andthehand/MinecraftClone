@@ -3,7 +3,8 @@
 #include "RealEngine.h"
 
 namespace RealEngine {
-	ChunkManager::ChunkManager() {
+	ChunkManager::ChunkManager(Ref<GameCamera> camera)
+		: m_Camera(camera) {
 		RE_PROFILE_FUNCTION();
 		m_Shader = Shader::Create("assets/shaders/basic.shader");
 		
@@ -13,12 +14,13 @@ namespace RealEngine {
 			return sqrt(RenderDistance * RenderDistance - x * x);
 		};
 	
+		glm::ivec3 cameraposition = glm::ivec3(m_Camera->GetPosition()) / glm::ivec3(CS);
 		for (float x = 0.5; x < RenderDistance; x += 1.0f) {
 			uint8_t yChunkCnt = (uint8_t)std::roundf(circleFunction(x));
 
 			//Right side of circle
 			for (int i = -yChunkCnt; i < yChunkCnt; i++) {
-				glm::ivec3 chunkOffset = { (int)(x - 0.5f), 0, -i };
+				glm::ivec3 chunkOffset = { (int)(x - 0.5f + cameraposition.x), 0, i + cameraposition.z };
 				Scope<Chunk> chunk = CreateScope<Chunk>(chunkOffset);
 
 				MeshData meshData = chunk->Reuse();
@@ -26,7 +28,7 @@ namespace RealEngine {
 				ChunkRenderData renderData;
 				for (uint32_t j = 0; j < renderData.faceDrawCommands.size(); j++) {
 					if (meshData.faceVertexLength[j]) {
-						uint32_t baseInstance = (j << 24) | (chunkOffset.z << 16) | (chunkOffset.y << 8) | chunkOffset.x;
+						uint32_t baseInstance = (j << 28) | (chunkOffset.z << 18) | (chunkOffset.y << 9) | chunkOffset.x;
 
 						auto drawCommand = m_ChunkRenderer.getDrawCommand(meshData.faceVertexLength[j], baseInstance);
 
@@ -41,7 +43,7 @@ namespace RealEngine {
 
 			//Left side of circle
 			for (int i = -yChunkCnt; i < yChunkCnt; i++) {
-				glm::ivec3 chunkOffset = { -(int)(x + 0.5f), 0, i };
+				glm::ivec3 chunkOffset = { cameraposition.z - (int)(x + 0.5f), 0, i + cameraposition.z };
 				Scope<Chunk> chunk = CreateScope<Chunk>(chunkOffset);
 
 				MeshData meshData = chunk->Reuse();
@@ -49,7 +51,7 @@ namespace RealEngine {
 				ChunkRenderData renderData;
 				for (uint32_t j = 0; j < renderData.faceDrawCommands.size(); j++) {
 					if (meshData.faceVertexLength[j]) {
-						uint32_t baseInstance = (j << 24) | (chunkOffset.z << 16) | (chunkOffset.y << 8) | chunkOffset.x;
+						uint32_t baseInstance = (j << 28) | (chunkOffset.z << 18) | (chunkOffset.y << 9) | chunkOffset.x;
 
 						auto drawCommand = m_ChunkRenderer.getDrawCommand(meshData.faceVertexLength[j], baseInstance);
 

@@ -2,10 +2,11 @@
 
 #include "Chunk.h"
 #include "ChunkRenderer.h"
+#include "GameCamera.h"
 
 #include "RealEngine.h"
 
-#define RenderDistance 1
+#define RenderDistance 40
 
 namespace RealEngine {
 	struct ChunkRenderData {
@@ -19,12 +20,13 @@ namespace RealEngine {
 
 	class ChunkManager {
 	public:
-		ChunkManager();
+		ChunkManager(Ref<GameCamera> camera);
 		~ChunkManager() = default;
 
 		void Update();
 		void Render();
 	private:
+		Ref<GameCamera> m_Camera;
 		Ref<Shader> m_Shader;
 
 		std::vector<ChunkData> m_Chunks;
