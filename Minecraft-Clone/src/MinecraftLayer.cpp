@@ -71,6 +71,7 @@ namespace RealEngine {
 		ImGui::Text("Draw Calls: %d", renderStats->DrawCalls);
 		ImGui::Text("Quads: %d", renderStats->Quads);
 		ImGui::Text("Chunks: %d", renderStats->Chunks);
+		ImGui::Text("Chunks Rendered: %d", renderStats->ChunksRendered);
 
 		ImGui::End();
 	}

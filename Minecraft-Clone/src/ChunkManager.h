@@ -6,7 +6,7 @@
 
 #include "RealEngine.h"
 
-#define RenderDistance 5
+#define RenderDistance 12
 
 namespace RealEngine {
 	struct ChunkRenderData {
@@ -23,6 +23,7 @@ namespace RealEngine {
 		uint32_t Quads = 0;
 
 		uint32_t Chunks = 0;
+		uint32_t ChunksRendered = 0;
 	};
 
 	class ChunkManager {

@@ -113,6 +113,8 @@ namespace RealEngine {
 				m_Chunks.push_back({ std::move(chunk), renderData });
 			}
 		}
+
+		m_RenderStats.Chunks = (uint32_t)m_Chunks.size();
 	}
 
 	void ChunkManager::Update() {
@@ -123,7 +125,7 @@ namespace RealEngine {
 		RE_PROFILE_FUNCTION();
 		m_RenderStats.DrawCalls = 0;
 		m_RenderStats.Quads = 0;
-		m_RenderStats.Chunks = 0;
+		m_RenderStats.ChunksRendered = 0;
 
 		glm::vec4 frustumPlanes[6];
 		Utils::ExtractFrustum(frustumPlanes, m_Camera->GetViewProjection());
@@ -138,7 +140,7 @@ namespace RealEngine {
 					}
 				}
 
-				m_RenderStats.Chunks++;
+				m_RenderStats.ChunksRendered++;
 			}
 		}
 
